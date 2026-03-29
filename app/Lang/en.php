@@ -1,0 +1,83 @@
+<?php
+declare(strict_types=1);
+
+return [
+    'nav.home' => 'Home',
+    'nav.chambres' => 'Bed & Breakfast',
+    'nav.villa' => 'The Villa',
+    'nav.exterieurs' => 'Outdoor Spaces',
+    'nav.journal' => 'Journal',
+    'nav.surplace' => 'Nearby',
+    'nav.contact' => 'Contact',
+
+    'site.name' => 'Villa Plaisance',
+    'site.tagline' => 'Bed & Breakfast and charming villa — Bédarrides, Provence',
+    'site.location' => 'Bédarrides, Vaucluse',
+
+    'home.hero.title' => 'Villa Plaisance',
+    'home.hero.subtitle' => 'Bed & Breakfast and charming villa in Bédarrides',
+    'home.hero.cta' => 'Discover the house',
+    'home.identity.title' => 'One house, two ways to stay',
+    'home.identity.text' => 'Villa Plaisance is a Provençal house welcoming travellers in Bédarrides, between Avignon and Orange. From September to June, we offer bed & breakfast with homemade breakfast and shared pool. In July and August, the entire villa is rented exclusively: four bedrooms, a private 12×6m pool, a garden under the olive trees. The place is quiet. The village is alive. The countryside is on foot, the TGV fifteen minutes away.',
+    'home.offers.title' => 'Two offers, two seasons',
+    'home.bb.title' => 'Bed & Breakfast',
+    'home.bb.subtitle' => 'September to June',
+    'home.bb.desc' => 'Two air-conditioned rooms, homemade breakfast, shared pool.',
+    'home.bb.cta' => 'View the rooms',
+    'home.villa.title' => 'The Villa exclusively',
+    'home.villa.subtitle' => 'July and August',
+    'home.villa.desc' => 'Four bedrooms, private 12×6m pool, fully equipped kitchen, Provençal garden.',
+    'home.villa.cta' => 'Discover the villa',
+    'home.territoire.title' => 'In the heart of the Golden Triangle',
+    'home.avis.title' => 'What our guests say',
+    'home.journal.title' => 'Journal',
+    'home.cta.title' => 'Fancy a stay with us?',
+    'home.cta.text' => 'Contact us to plan your Provençal getaway.',
+    'home.cta.button' => 'Write to us',
+
+    'chambres.hero.title' => 'Bed & Breakfast',
+    'chambres.hero.subtitle' => 'Two rooms, September to June',
+    'chambres.intro.title' => 'Staying as B&B guests',
+    'chambres.intro.text' => 'From September to June, Villa Plaisance opens two rooms to travellers. Breakfast is prepared every morning with local products. The pool is shared with guests. The welcome is personal, and so is the advice.',
+    'chambres.breakfast.title' => 'Homemade breakfast',
+    'chambres.faq.title' => 'Frequently asked questions — Bed & Breakfast',
+
+    'villa.hero.title' => 'The Villa exclusively',
+    'villa.hero.subtitle' => 'Four bedrooms, July and August',
+    'villa.intro.title' => 'The whole house is yours',
+    'villa.intro.text' => 'In July and August, Villa Plaisance is rented exclusively. Four bedrooms, a private fenced pool (12×6m), a fully equipped kitchen, a Provençal garden. Up to ten people. Self-catering, the keys are yours.',
+    'villa.pool.title' => 'Private pool',
+    'villa.faq.title' => 'Frequently asked questions — Entire villa',
+
+    'exterieurs.hero.title' => 'Outdoor Spaces',
+    'exterieurs.hero.subtitle' => 'Garden, pool, terraces',
+    'exterieurs.intro.title' => 'Outside, it\'s still home',
+
+    'journal.hero.title' => 'Journal',
+    'journal.hero.subtitle' => 'Stories, tips and Provençal perspectives',
+
+    'surplace.hero.title' => 'Nearby',
+    'surplace.hero.subtitle' => 'Our addresses and recommendations around Bédarrides',
+
+    'contact.hero.title' => 'Contact',
+    'contact.hero.subtitle' => 'A question? Write to us.',
+    'contact.form.name' => 'Your name',
+    'contact.form.email' => 'Your email',
+    'contact.form.subject' => 'Subject',
+    'contact.form.message' => 'Your message',
+    'contact.form.send' => 'Send',
+    'contact.form.success' => 'Your message has been sent. We will reply shortly.',
+    'contact.form.error' => 'An error occurred. Please try again.',
+
+    'footer.mentions' => 'Legal notice',
+    'footer.confidentialite' => 'Privacy policy',
+    'footer.plan' => 'Sitemap',
+    'footer.rights' => '© :year Villa Plaisance — Bédarrides, Provence',
+
+    'readmore' => 'Read more',
+    'back' => 'Back',
+    'published_on' => 'Published on :date',
+    'category' => 'Category',
+    'share' => 'Share',
+    'minutes_read' => ':min min read',
+];

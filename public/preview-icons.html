@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogue d'icônes — Villa Plaisance</title>
+<style>
+  :root {
+    --dark: #1A1814;
+    --accent: #EC6C66;
+    --teal: #285959;
+    --sand: #F8F6F2;
+    --warm: #F1EDE6;
+    --muted: #8A8579;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--dark);
+    background: #fff;
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 3rem;
+  }
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 400;
+    font-size: 1.4rem;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--warm);
+    color: var(--teal);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+  .icon-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.25rem 0.75rem;
+    border: 1px solid var(--warm);
+    background: var(--sand);
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .icon-card:hover {
+    border-color: var(--teal);
+    background: #fff;
+  }
+  .icon-card svg {
+    width: 28px;
+    height: 28px;
+    color: var(--dark);
+  }
+  .icon-card span {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .icon-card code {
+    font-size: 0.55rem;
+    color: var(--teal);
+    display: none;
+    background: var(--warm);
+    padding: 0.15em 0.4em;
+  }
+  .icon-card:hover code { display: block; }
+  .icon-card:hover span { display: none; }
+
+  /* Size variants demo */
+  .demo-sizes {
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--sand);
+    margin: 2rem 0;
+  }
+  .demo-sizes .demo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .demo-sizes .demo-item span { font-size: 0.7rem; color: var(--muted); }
+
+  /* Color variants */
+  .demo-colors {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .demo-color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+  }
+  .demo-color-item span { font-size: 0.7rem; color: var(--muted); }
+  .demo-color-item.on-dark {
+    background: var(--dark); color: #fff;
+  }
+  .demo-color-item.on-dark span { color: rgba(255,255,255,0.5); }
+  .demo-color-item.on-dark svg { color: #fff; }
+  .demo-color-item.on-accent svg { color: var(--accent); }
+  .demo-color-item.on-teal svg { color: var(--teal); }
+
+  /* Usage code */
+  .usage {
+    background: var(--sand);
+    padding: 1.5rem;
+    margin: 2rem 0;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--dark);
+  }
+  .usage strong { color: var(--teal); font-weight: 600; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Include the SVG sprite -->
+<div style="display:none">
+<?php // In production, this is included via PHP. For preview, we inline it. ?>
+</div>
+
+<!-- We load icons.svg inline for this static preview -->
+<script>
+fetch('/assets/img/icons.svg?v=' + Date.now()).then(r => r.text()).then(svg => {
+  const div = document.createElement('div');
+  div.style.display = 'none';
+  div.innerHTML = svg;
+  document.body.prepend(div);
+  // Force re-render of use elements
+  document.querySelectorAll('use').forEach(u => {
+    const href = u.getAttribute('href');
+    u.setAttribute('href', '');
+    u.setAttribute('href', href);
+  });
+});
+</script>
+
+<h1>Catalogue d'icônes</h1>
+<p class="subtitle">Villa Plaisance — 45 icônes SVG, trait fin 1.5px, style Aman. Cliquer pour voir l'ID.</p>
+
+<!-- Usage -->
+<div class="usage">
+  <strong>Utilisation dans les templates PHP :</strong><br>
+  &lt;svg class="icon"&gt;&lt;use href="/assets/img/icons.svg#icon-wifi"&gt;&lt;/use&gt;&lt;/svg&gt;
+</div>
+
+<!-- SIZE DEMO -->
+<h2>Tailles</h2>
+<div class="demo-sizes">
+  <div class="demo-item">
+    <svg width="16" height="16"><use href="/assets/img/icons.svg#icon-wifi"></use></svg>
+    <span>16px</span>
+  </div>
+  <div class="demo-item">
+    <svg width="20" height="20"><use href="/assets/img/icons.svg#icon-wifi"></use></svg>
+    <span>20px</span>
+  </div>
+  <div class="demo-item">
+    <svg width="24" height="24"><use href="/assets/img/icons.svg#icon-wifi"></use></svg>
+    <span>24px</span>
+  </div>
+  <div class="demo-item">
+    <svg width="32" height="32"><use href="/assets/img/icons.svg#icon-wifi"></use></svg>
+    <span>32px</span>
+  </div>
+  <div class="demo-item">
+    <svg width="48" height="48"><use href="/assets/img/icons.svg#icon-wifi"></use></svg>
+    <span>48px</span>
+  </div>
+</div>
+
+<!-- COLOR DEMO -->
+<h2>Couleurs</h2>
+<div class="demo-colors">
+  <div class="demo-color-item">
+    <svg width="28" height="28"><use href="/assets/img/icons.svg#icon-piscine"></use></svg>
+    <span>Dark (defaut)</span>
+  </div>
+  <div class="demo-color-item on-accent">
+    <svg width="28" height="28"><use href="/assets/img/icons.svg#icon-piscine"></use></svg>
+    <span>Corail #EC6C66</span>
+  </div>
+  <div class="demo-color-item on-teal">
+    <svg width="28" height="28"><use href="/assets/img/icons.svg#icon-piscine"></use></svg>
+    <span>Teal #285959</span>
+  </div>
+  <div class="demo-color-item on-dark">
+    <svg width="28" height="28"><use href="/assets/img/icons.svg#icon-piscine"></use></svg>
+    <span>Blanc sur dark</span>
+  </div>
+</div>
+
+<!-- EQUIPEMENTS -->
+<h2>Equipements chambres & espaces</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-lit"></use></svg><span>Lit</span><code>icon-lit</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-climatisation"></use></svg><span>Climatisation</span><code>icon-climatisation</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-tv"></use></svg><span>TV</span><code>icon-tv</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-wifi"></use></svg><span>WiFi</span><code>icon-wifi</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-bibliotheque"></use></svg><span>Bibliothèque</span><code>icon-bibliotheque</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-vue-jardin"></use></svg><span>Vue jardin</span><code>icon-vue-jardin</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-jardin"></use></svg><span>Accès jardin</span><code>icon-jardin</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-clic-clac"></use></svg><span>Clic-clac</span><code>icon-clic-clac</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-salle-de-bain"></use></svg><span>Salle de bain</span><code>icon-salle-de-bain</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-douche"></use></svg><span>Douche</span><code>icon-douche</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-vintage"></use></svg><span>Mobilier vintage</span><code>icon-vintage</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-cuisine"></use></svg><span>Cuisine</span><code>icon-cuisine</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-parking"></use></svg><span>Parking</span><code>icon-parking</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-barbecue"></use></svg><span>Barbecue</span><code>icon-barbecue</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-linge"></use></svg><span>Linge fourni</span><code>icon-linge</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-animaux"></use></svg><span>Animaux</span><code>icon-animaux</code></div>
+</div>
+
+<!-- STATS -->
+<h2>Stats / Chiffres clés</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-maison"></use></svg><span>Maison</span><code>icon-maison</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-personnes"></use></svg><span>Personnes</span><code>icon-personnes</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-piscine"></use></svg><span>Piscine</span><code>icon-piscine</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-vignoble"></use></svg><span>Vignoble</span><code>icon-vignoble</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-transport"></use></svg><span>Transport / TGV</span><code>icon-transport</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-etoile"></use></svg><span>Etoile / Note</span><code>icon-etoile</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-superhost"></use></svg><span>Superhost</span><code>icon-superhost</code></div>
+</div>
+
+<!-- TERRITOIRE -->
+<h2>Territoire / Proximité</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-vin"></use></svg><span>Vin / Vignoble</span><code>icon-vin</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-monument"></use></svg><span>Monument</span><code>icon-monument</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-theatre"></use></svg><span>Théâtre antique</span><code>icon-theatre</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-antiquites"></use></svg><span>Antiquités</span><code>icon-antiquites</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-aqueduc"></use></svg><span>Aqueduc / Pont</span><code>icon-aqueduc</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-village"></use></svg><span>Village</span><code>icon-village</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-archeologie"></use></svg><span>Archéologie</span><code>icon-archeologie</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-montagne"></use></svg><span>Montagne</span><code>icon-montagne</code></div>
+</div>
+
+<!-- PLATEFORMES -->
+<h2>Plateformes avis</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-airbnb"></use></svg><span>Airbnb</span><code>icon-airbnb</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-booking"></use></svg><span>Booking</span><code>icon-booking</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-google"></use></svg><span>Google</span><code>icon-google</code></div>
+</div>
+
+<!-- CONTACT / RESEAUX -->
+<h2>Contact / Réseaux sociaux</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-email"></use></svg><span>Email</span><code>icon-email</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-telephone"></use></svg><span>Téléphone</span><code>icon-telephone</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-localisation"></use></svg><span>Localisation</span><code>icon-localisation</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-instagram"></use></svg><span>Instagram</span><code>icon-instagram</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-facebook"></use></svg><span>Facebook</span><code>icon-facebook</code></div>
+</div>
+
+<!-- NAVIGATION / UI -->
+<h2>Navigation / UI</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-fleche-droite"></use></svg><span>Flèche droite</span><code>icon-fleche-droite</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-fleche-gauche"></use></svg><span>Flèche gauche</span><code>icon-fleche-gauche</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-chevron-bas"></use></svg><span>Chevron bas</span><code>icon-chevron-bas</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-horloge"></use></svg><span>Horloge</span><code>icon-horloge</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-calendrier"></use></svg><span>Calendrier</span><code>icon-calendrier</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-check"></use></svg><span>Check</span><code>icon-check</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-plus"></use></svg><span>Plus</span><code>icon-plus</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-fermer"></use></svg><span>Fermer</span><code>icon-fermer</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-lien-externe"></use></svg><span>Lien externe</span><code>icon-lien-externe</code></div>
+</div>
+
+<!-- INFORMATIONS PRATIQUES -->
+<h2>Informations pratiques</h2>
+<div class="grid">
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-petit-dejeuner"></use></svg><span>Petit-déjeuner</span><code>icon-petit-dejeuner</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-serviette"></use></svg><span>Serviettes</span><code>icon-serviette</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-cle"></use></svg><span>Clé / Accès</span><code>icon-cle</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-soleil"></use></svg><span>Soleil / Saison</span><code>icon-soleil</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-transat"></use></svg><span>Transat</span><code>icon-transat</code></div>
+  <div class="icon-card"><svg width="28" height="28"><use href="/assets/img/icons.svg#icon-velo"></use></svg><span>Vélo</span><code>icon-velo</code></div>
+</div>
+
+</body>
+</html>

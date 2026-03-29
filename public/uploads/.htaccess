@@ -1,0 +1,18 @@
+# Sécurité uploads — pas d'exécution PHP
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# Types autorisés uniquement
+<FilesMatch "\.(webp|jpg|jpeg|png|gif|svg|avif)$">
+    Require all granted
+</FilesMatch>
+
+# Headers cache images (30 jours)
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/webp "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 30 days"
+    ExpiresByType image/png "access plus 30 days"
+    ExpiresByType image/avif "access plus 30 days"
+</IfModule>
