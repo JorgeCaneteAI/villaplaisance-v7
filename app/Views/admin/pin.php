@@ -10,17 +10,34 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/admin.css">
     <style>
-    .pin-inputs { display: flex; gap: 0.75rem; justify-content: center; margin: 1.5rem 0; }
-    .pin-inputs input {
-        width: 52px; height: 62px; text-align: center;
-        font-size: 1.5rem; font-weight: 600; letter-spacing: 0;
-        border: 2px solid var(--admin-border); border-radius: 8px;
-        background: #f8f9fb; transition: border-color 0.2s;
+    .pin-display { display: flex; gap: 0.75rem; justify-content: center; margin: 1.5rem 0; }
+    .pin-dot {
+        width: 18px; height: 18px; border-radius: 50%;
+        border: 2px solid var(--admin-border); background: #f8f9fb;
+        transition: background 0.15s, border-color 0.15s;
     }
-    .pin-inputs input:focus { border-color: var(--admin-accent); outline: none; background: #fff; }
+    .pin-dot.filled { background: var(--admin-accent); border-color: var(--admin-accent); }
     .pin-subtitle { text-align: center; color: #888; font-size: 0.85rem; margin-bottom: 0.5rem; }
     .pin-lock { text-align: center; margin-bottom: 1rem; }
     .pin-lock svg { width: 40px; height: 40px; color: var(--admin-accent); }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; max-width: 280px; margin: 1.5rem auto; }
+    .pin-key {
+        width: 100%; aspect-ratio: 1.4; border: 1px solid var(--admin-border);
+        border-radius: 10px; background: #fff; font-size: 1.5rem; font-weight: 600;
+        cursor: pointer; transition: background 0.1s, transform 0.1s;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Inter', sans-serif; color: #333;
+    }
+    .pin-key:hover { background: #f0f0f0; }
+    .pin-key:active { background: #e0e0e0; transform: scale(0.95); }
+    .pin-key.backspace { font-size: 1.2rem; color: #888; }
+    .pin-key.empty { visibility: hidden; border: none; }
+    .pin-error-shake { animation: shake 0.4s; }
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-8px); }
+        75% { transform: translateX(8px); }
+    }
     </style>
 </head>
 <body class="login-page">
@@ -35,56 +52,83 @@
         <div class="alert alert-error"><?= htmlspecialchars($flash['error']) ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="/admin/pin">
+        <form method="POST" action="/admin/pin" id="pin-form">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
             <input type="hidden" name="pin" id="pin-hidden" value="">
 
-            <div class="pin-inputs">
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="0" autofocus>
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="1">
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="2">
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="3">
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="4">
-                <input type="password" inputmode="numeric" maxlength="1" pattern="[0-9]" class="pin-digit" data-index="5">
+            <div class="pin-display" id="pin-dots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width:100%">Valider</button>
+            <div class="pin-keypad">
+                <button type="button" class="pin-key" data-val="1">1</button>
+                <button type="button" class="pin-key" data-val="2">2</button>
+                <button type="button" class="pin-key" data-val="3">3</button>
+                <button type="button" class="pin-key" data-val="4">4</button>
+                <button type="button" class="pin-key" data-val="5">5</button>
+                <button type="button" class="pin-key" data-val="6">6</button>
+                <button type="button" class="pin-key" data-val="7">7</button>
+                <button type="button" class="pin-key" data-val="8">8</button>
+                <button type="button" class="pin-key" data-val="9">9</button>
+                <button type="button" class="pin-key empty"></button>
+                <button type="button" class="pin-key" data-val="0">0</button>
+                <button type="button" class="pin-key backspace" data-val="back">&#9003;</button>
+            </div>
         </form>
 
         <p style="text-align:center;margin-top:1rem"><a href="/admin/logout" style="color:#888;font-size:0.8rem">Annuler</a></p>
     </div>
 
     <script>
-    const digits = document.querySelectorAll('.pin-digit');
+    const dots = document.querySelectorAll('.pin-dot');
     const hidden = document.getElementById('pin-hidden');
+    const form = document.getElementById('pin-form');
+    let pin = '';
 
-    digits.forEach((input, i) => {
-        input.addEventListener('input', () => {
-            input.value = input.value.replace(/[^0-9]/g, '');
-            if (input.value && i < 5) digits[i + 1].focus();
-            updateHidden();
-        });
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !input.value && i > 0) {
-                digits[i - 1].focus();
-                digits[i - 1].value = '';
-                updateHidden();
+    document.querySelectorAll('.pin-key').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = btn.dataset.val;
+            if (!val) return;
+
+            if (val === 'back') {
+                pin = pin.slice(0, -1);
+            } else if (pin.length < 6) {
+                pin += val;
             }
-        });
-        input.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const paste = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
-            paste.split('').forEach((c, j) => { if (digits[j]) digits[j].value = c; });
-            if (paste.length > 0) digits[Math.min(paste.length, 5)].focus();
-            updateHidden();
+
+            updateDots();
+
+            if (pin.length === 6) {
+                hidden.value = pin;
+                setTimeout(() => form.submit(), 150);
+            }
         });
     });
 
-    function updateHidden() {
-        hidden.value = Array.from(digits).map(d => d.value).join('');
-        if (hidden.value.length === 6) {
-            document.querySelector('form').submit();
+    // Support clavier physique aussi
+    document.addEventListener('keydown', (e) => {
+        if (e.key >= '0' && e.key <= '9' && pin.length < 6) {
+            pin += e.key;
+            updateDots();
+            if (pin.length === 6) {
+                hidden.value = pin;
+                setTimeout(() => form.submit(), 150);
+            }
+        } else if (e.key === 'Backspace') {
+            pin = pin.slice(0, -1);
+            updateDots();
         }
+    });
+
+    function updateDots() {
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('filled', i < pin.length);
+        });
     }
     </script>
 </body>
