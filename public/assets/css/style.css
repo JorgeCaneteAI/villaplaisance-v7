@@ -775,11 +775,12 @@ h3 {
   }
   .prose-image {
     z-index: 1;
-    align-self: center;
-    height: 120%;
+    align-self: stretch;
     margin-left: 10%;
-    margin-top: -10%;
+    margin-top: -9%;
+    margin-bottom: -9%;
     position: relative;
+    overflow: hidden;
   }
   .prose-image img {
     width: 100%;
