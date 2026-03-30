@@ -64,7 +64,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Caveat:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css?v=<?= filemtime(ROOT . '/public/assets/css/style.css') ?>">
 
     <!-- JSON-LD -->
     <?php foreach (($jsonLd ?? []) as $ld): ?>
@@ -221,6 +221,6 @@
     </script>
     <?php endif; ?>
 
-    <script src="/assets/js/main.js" defer></script>
+    <script src="/assets/js/main.js?v=<?= filemtime(ROOT . '/public/assets/js/main.js') ?>" defer></script>
 </body>
 </html>
