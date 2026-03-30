@@ -36,10 +36,6 @@
     <!-- Canonical -->
     <link rel="canonical" href="<?= htmlspecialchars($seo['canonical'] ?? '') ?>">
 
-    <!-- Hreflang -->
-    <?php foreach (($seo['hreflang'] ?? []) as $hl): ?>
-    <link rel="alternate" hreflang="<?= $hl['lang'] ?>" href="<?= htmlspecialchars($hl['url']) ?>">
-    <?php endforeach; ?>
 
     <!-- Open Graph -->
     <?php if (!empty($seo['og'])): ?>
@@ -110,16 +106,6 @@
                 </ul>
             </nav>
 
-            <!-- Language switcher -->
-            <div class="lang-switcher" aria-label="Changer de langue">
-                <?php
-                $currentPage = 'accueil'; // Default, should be passed from controller
-                foreach (LangService::getAllLangs() as $l):
-                    $active = ($l === $lang) ? ' class="active" aria-current="true"' : '';
-                ?>
-                <a href="<?= $l === 'fr' ? '/' : '/' . $l . '/' ?>"<?= $active ?>><?= strtoupper($l) ?></a>
-                <?php endforeach; ?>
-            </div>
         </div>
     </header>
 

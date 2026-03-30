@@ -14,8 +14,6 @@ $pages = [
     ['slug' => '/politique-confidentialite/', 'priority' => '0.3', 'changefreq' => 'yearly'],
 ];
 
-$langPrefixes = ['fr' => '', 'en' => '/en', 'es' => '/es', 'de' => '/de'];
-
 // Load articles from DB
 $articles = [];
 try {
@@ -23,21 +21,14 @@ try {
 } catch (\Throwable $e) {}
 ?>
 
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <?php foreach ($pages as $page): ?>
-<?php foreach ($langPrefixes as $lang => $prefix): ?>
     <url>
-        <loc><?= htmlspecialchars($base . $prefix . $page['slug']) ?></loc>
+        <loc><?= htmlspecialchars($base . $page['slug']) ?></loc>
         <lastmod><?= date('Y-m-d') ?></lastmod>
         <changefreq><?= $page['changefreq'] ?></changefreq>
         <priority><?= $page['priority'] ?></priority>
-<?php foreach ($langPrefixes as $altLang => $altPrefix): ?>
-        <xhtml:link rel="alternate" hreflang="<?= $altLang ?>" href="<?= htmlspecialchars($base . $altPrefix . $page['slug']) ?>"/>
-<?php endforeach; ?>
-        <xhtml:link rel="alternate" hreflang="x-default" href="<?= htmlspecialchars($base . $page['slug']) ?>"/>
     </url>
-<?php endforeach; ?>
 <?php endforeach; ?>
 
 <?php foreach ($articles as $art):
