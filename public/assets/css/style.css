@@ -766,8 +766,8 @@ h3 {
   .prose-text {
     position: relative;
     z-index: 2;
-    padding: 1rem 17% 1rem 15%;
-    max-width: 45%;
+    padding: 1rem 1.5rem 1rem 15%;
+    max-width: 75%;
     background: #fff;
     border-radius: 0 2rem 0 0;
     align-self: center;
