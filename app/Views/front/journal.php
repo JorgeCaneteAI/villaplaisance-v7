@@ -1,3 +1,13 @@
+<!-- Breadcrumb -->
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+    <div class="container">
+        <ol>
+            <li><a href="<?= LangService::url('accueil') ?>"><?= t('nav.home') ?></a></li>
+            <li aria-current="page"><?= t('nav.journal') ?></li>
+        </ol>
+    </div>
+</nav>
+
 <?php
 // Render hero from CMS
 $heroSections = BlockService::getSections('journal', $lang);
@@ -21,30 +31,29 @@ foreach ($heroSections as $section) {
 <?php endif; ?>
 
 <!-- Liste articles -->
-<section class="section">
+<section class="section section-magazine">
     <div class="container">
         <?php if (empty($articles)): ?>
         <p class="text-center text-muted">Aucun article publié pour le moment.</p>
         <?php else: ?>
-        <div class="articles-grid articles-grid-large">
-            <?php foreach ($articles as $article): ?>
-            <article class="article-card">
-                <div class="article-image">
-                    <?= ImageService::img($article['cover_image'] ?? 'journal-placeholder.webp', htmlspecialchars($article['title']), 800, 500) ?>
+        <div class="magazine-grid">
+            <?php foreach ($articles as $i => $article): ?>
+            <a href="/journal/<?= htmlspecialchars($article['slug']) ?>" class="mag-card<?= $i === 0 ? ' mag-card-featured' : '' ?>">
+                <div class="mag-card-image">
+                    <?= ImageService::img($article['cover_image'] ?? 'journal-placeholder.webp', htmlspecialchars($article['title']), ($i === 0 ? 1200 : 800), ($i === 0 ? 700 : 500)) ?>
                 </div>
-                <div class="article-body">
+                <div class="mag-card-overlay"></div>
+                <div class="mag-card-content">
                     <?php if (!empty($article['category'])): ?>
-                    <span class="article-category"><?= htmlspecialchars($article['category']) ?></span>
+                    <span class="mag-card-tag"><?= htmlspecialchars($article['category']) ?></span>
                     <?php endif; ?>
-                    <h2><a href="/journal/<?= htmlspecialchars($article['slug']) ?>"><?= htmlspecialchars($article['title']) ?></a></h2>
-                    <p><?= htmlspecialchars($article['excerpt'] ?? '') ?></p>
-                    <div class="article-meta">
-                        <?php if (!empty($article['published_at'])): ?>
-                        <time datetime="<?= $article['published_at'] ?>"><?= date('d/m/Y', strtotime($article['published_at'])) ?></time>
-                        <?php endif; ?>
-                    </div>
+                    <h2 class="mag-card-title"><?= htmlspecialchars($article['title']) ?></h2>
+                    <p class="mag-card-excerpt"><?= htmlspecialchars($article['excerpt'] ?? '') ?></p>
+                    <?php if (!empty($article['published_at'])): ?>
+                    <time class="mag-card-date" datetime="<?= $article['published_at'] ?>"><?= date('d M Y', strtotime($article['published_at'])) ?></time>
+                    <?php endif; ?>
                 </div>
-            </article>
+            </a>
             <?php endforeach; ?>
         </div>
         <?php endif; ?>

@@ -139,7 +139,7 @@ class RedirectController extends AdminBaseController
 
                 if ($path === '' || $path === '/') {
                     $rules .= "RewriteCond %{HTTP_HOST} ^{$domainRegex}$ [NC]\n";
-                    $rules .= "RewriteRule ^$ https://v1.villaplaisance.fr{$to} [R={$code},L]\n";
+                    $rules .= "RewriteRule ^$ https://villaplaisance.fr{$to} [R={$code},L]\n";
                 } else {
                     $rules .= "RewriteRule ^" . preg_quote($path, '#') . "/?$ {$to} [R={$code},L]\n";
                 }
@@ -161,7 +161,7 @@ class RedirectController extends AdminBaseController
         if ($hasOldDomain) {
             $rules .= "\n# Catch-all: old domain → new domain root\n";
             $rules .= "RewriteCond %{HTTP_HOST} ^(www\\.)?villaplaisance\\.fr$ [NC]\n";
-            $rules .= "RewriteRule ^(.*)$ https://v1.villaplaisance.fr/\$1 [R=301,L]\n";
+            $rules .= "RewriteRule ^(.*)$ https://villaplaisance.fr/\$1 [R=301,L]\n";
         }
 
         // Read current .htaccess

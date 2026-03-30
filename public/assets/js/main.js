@@ -1,4 +1,4 @@
-// Villa Plaisance V7 — Épure & Mouvement
+// Villa Plaisance V7 — Editorial Radical
 'use strict';
 
 const VP = {
@@ -21,6 +21,7 @@ const VP = {
         }
         this.faqAccordion();
         this.heroSlideshow();
+        this.splitTextReveal();
     },
 
     // ─── Mobile nav toggle ───
@@ -48,7 +49,6 @@ const VP = {
             closeBtn.addEventListener('click', closeNav);
         }
 
-        // Close on link click
         navList.querySelectorAll('a').forEach(a => {
             a.addEventListener('click', closeNav);
         });
@@ -74,14 +74,19 @@ const VP = {
 
     // ─── Scroll reveal ───
     scrollReveal() {
-        // Auto-tag sections and grids
+        // Auto-tag sections
         document.querySelectorAll('.section').forEach(s => {
             if (!s.classList.contains('hero')) {
                 s.classList.add('reveal');
             }
         });
+        // Stagger children in grids
         document.querySelectorAll('.stats-grid, .rooms-grid, .offers-grid, .reviews-grid, .articles-grid, .territoire-grid, .gallery-grid').forEach(g => {
             g.classList.add('reveal-stagger');
+        });
+        // Scale reveal on images
+        document.querySelectorAll('.prose-image, .offer-image').forEach(el => {
+            el.classList.add('img-scale');
         });
 
         const observer = new IntersectionObserver((entries) => {
@@ -91,9 +96,9 @@ const VP = {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
 
-        document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+        document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-stagger, .img-scale').forEach(el => observer.observe(el));
     },
 
     // ─── Counter animation ───
@@ -122,13 +127,12 @@ const VP = {
         const isFloat = numMatch[1].includes('.');
         const prefix = target.substring(0, target.indexOf(numMatch[1]));
         const suffix = target.substring(target.indexOf(numMatch[1]) + numMatch[1].length);
-        const duration = 1200;
+        const duration = 1500;
         const start = performance.now();
 
         const step = (now) => {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
-            // Ease out expo
             const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
             const current = isFloat ? (num * eased).toFixed(1) : Math.round(num * eased);
             el.textContent = prefix + current + suffix;
@@ -149,8 +153,7 @@ const VP = {
                     const scrollY = window.scrollY;
                     const heroH = heroImage.parentElement.offsetHeight;
                     if (scrollY < heroH) {
-                        // Subtle parallax: image moves slower than scroll
-                        heroImage.style.transform = `translateY(${scrollY * 0.35}px)`;
+                        heroImage.style.transform = `translateY(${scrollY * 0.3}px)`;
                     }
                     ticking = false;
                 });
@@ -172,7 +175,7 @@ const VP = {
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.15 });
+        }, { threshold: 0.1 });
 
         document.querySelectorAll('.img-reveal').forEach(el => observer.observe(el));
     },
@@ -196,7 +199,6 @@ const VP = {
             cursor.classList.remove('visible');
         });
 
-        // Hover targets
         const hoverTargets = 'a, button, .btn-primary, .btn-secondary, .faq-question, .gallery-item';
         document.addEventListener('mouseover', (e) => {
             if (e.target.closest(hoverTargets)) cursor.classList.add('hover');
@@ -205,10 +207,9 @@ const VP = {
             if (e.target.closest(hoverTargets)) cursor.classList.remove('hover');
         });
 
-        // Smooth follow
         const follow = () => {
-            cx += (tx - cx) * 0.15;
-            cy += (ty - cy) * 0.15;
+            cx += (tx - cx) * 0.12;
+            cy += (ty - cy) * 0.12;
             cursor.style.left = cx + 'px';
             cursor.style.top = cy + 'px';
             requestAnimationFrame(follow);
@@ -223,13 +224,13 @@ const VP = {
                 const rect = btn.getBoundingClientRect();
                 const x = e.clientX - rect.left - rect.width / 2;
                 const y = e.clientY - rect.top - rect.height / 2;
-                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+                btn.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
             });
 
             btn.addEventListener('mouseleave', () => {
                 btn.style.transform = '';
-                btn.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
-                setTimeout(() => { btn.style.transition = ''; }, 400);
+                btn.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+                setTimeout(() => { btn.style.transition = ''; }, 500);
             });
         });
     },
@@ -284,7 +285,6 @@ const VP = {
             if (prevBtn) prevBtn.addEventListener('click', () => goTo(index - 1));
             if (nextBtn) nextBtn.addEventListener('click', () => goTo(index + 1));
 
-            // Touch / mouse drag
             const onStart = (e) => {
                 isDragging = true;
                 startX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
@@ -318,7 +318,6 @@ const VP = {
             carousel.addEventListener('touchmove', onMove, { passive: true });
             carousel.addEventListener('touchend', onEnd);
 
-            // Keyboard
             carousel.setAttribute('tabindex', '0');
             carousel.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft') goTo(index - 1);
@@ -329,14 +328,14 @@ const VP = {
         });
     },
 
-    // ─── FAQ smooth open/close ───
+    // ─── Hero slideshow ───
     heroSlideshow() {
         const slideshow = document.querySelector('.hero-slideshow');
         if (!slideshow) return;
         const slides = slideshow.querySelectorAll('.hero-slide');
         if (slides.length < 2) return;
         let current = 0;
-        const interval = this.reducedMotion ? 6000 : 4500;
+        const interval = this.reducedMotion ? 7000 : 5000;
         setInterval(() => {
             slides[current].classList.remove('active');
             current = (current + 1) % slides.length;
@@ -344,15 +343,15 @@ const VP = {
         }, interval);
     },
 
+    // ─── FAQ accordion ───
     faqAccordion() {
         document.querySelectorAll('.faq-item').forEach(item => {
             const summary = item.querySelector('.faq-question');
             const answer = item.querySelector('.faq-answer');
             if (!summary || !answer) return;
 
-            // Wrap answer content for animation
             answer.style.overflow = 'hidden';
-            answer.style.transition = 'max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s';
+            answer.style.transition = 'max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s';
 
             item.addEventListener('toggle', () => {
                 if (item.open) {
@@ -364,13 +363,86 @@ const VP = {
                 }
             });
 
-            // Init closed state
             if (!item.open) {
                 answer.style.maxHeight = '0';
                 answer.style.opacity = '0';
             }
         });
+    },
+
+    // ─── Split text reveal for section headings ───
+    splitTextReveal() {
+        if (this.reducedMotion) return;
+
+        const headings = document.querySelectorAll('.prose-heading, .reviews-header h2, .cta-layout h2');
+        headings.forEach(h => {
+            const text = h.textContent.trim();
+            if (!text) return;
+            const words = text.split(' ');
+            h.innerHTML = words.map((w, i) =>
+                `<span class="split-word" style="animation-delay:${i * 0.08}s">${w}</span>`
+            ).join(' ');
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('split-in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        headings.forEach(h => observer.observe(h));
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => VP.init());
+// Postcard carousel + equip cloud
+document.addEventListener('DOMContentLoaded', () => {
+    VP.init();
+
+    // Equip cloud — staggered bounce on scroll
+    const equipLists = document.querySelectorAll('.room-equip, .block-list-check');
+    if (equipLists.length) {
+        const eqObs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const items = entry.target.querySelectorAll('li');
+                    items.forEach((li, i) => {
+                        li.style.transitionDelay = (i * 0.07) + 's';
+                    });
+                    entry.target.classList.add('in-view');
+                    eqObs.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        equipLists.forEach(ul => eqObs.observe(ul));
+    }
+
+    document.querySelectorAll('.postcard-carousel').forEach(carousel => {
+        const cards = carousel.querySelectorAll('.postcard');
+        const counter = carousel.querySelector('.postcard-current');
+        const prev = carousel.querySelector('.postcard-prev');
+        const next = carousel.querySelector('.postcard-next');
+        let idx = 0;
+
+        // Calculer la hauteur max : afficher toutes les cartes, mesurer, puis masquer
+        cards.forEach(c => { c.style.display = 'block'; c.style.position = 'absolute'; c.style.visibility = 'hidden'; });
+        let maxH = 0;
+        cards.forEach(c => { const h = c.offsetHeight; if (h > maxH) maxH = h; });
+        cards.forEach(c => { c.style.display = ''; c.style.position = ''; c.style.visibility = ''; });
+        if (maxH > 0) {
+            cards.forEach(c => { c.querySelector('.postcard-inner').style.minHeight = maxH + 'px'; });
+        }
+
+        function show(i) {
+            cards.forEach(c => c.classList.remove('active'));
+            idx = (i + cards.length) % cards.length;
+            cards[idx].classList.add('active');
+            if (counter) counter.textContent = idx + 1;
+        }
+
+        if (prev) prev.addEventListener('click', () => show(idx - 1));
+        if (next) next.addEventListener('click', () => show(idx + 1));
+    });
+});

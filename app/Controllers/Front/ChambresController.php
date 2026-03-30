@@ -15,7 +15,13 @@ class ChambresController extends BaseController
             'Deux chambres climatisées avec petit-déjeuner maison et piscine partagée. De septembre à juin, entre Avignon et Orange.'
         );
 
-        $jsonLd = [\SeoService::bedAndBreakfastJsonLd()];
+        $jsonLd = [
+            \SeoService::bedAndBreakfastJsonLd(),
+            \SeoService::breadcrumbJsonLd([
+                ['name' => t('nav.home'), 'url' => APP_URL . '/'],
+                ['name' => t('nav.chambres')],
+            ]),
+        ];
 
         $faqs = [];
         try {

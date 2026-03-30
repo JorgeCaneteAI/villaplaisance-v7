@@ -30,7 +30,7 @@
 - 45 min des Baux-de-Provence
 
 ## Contact
-- Site : https://v1.villaplaisance.fr
+- Site : https://villaplaisance.fr
 - Email : contact@villaplaisance.fr
 
 ## Langues

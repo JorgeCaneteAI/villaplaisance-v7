@@ -14,12 +14,10 @@ $hasImages = !empty($proseImages);
 ?>
 <section class="section">
     <div class="container prose-section">
-        <?php if ($heading): ?>
-        <h2><?= htmlspecialchars($heading) ?></h2>
-        <?php endif; ?>
         <?php if ($hasImages): ?>
         <div class="prose-grid">
             <div class="prose-text">
+                <h2 class="prose-heading"><?= htmlspecialchars($heading) ?></h2>
                 <p<?= $lead ? ' class="lead"' : '' ?>><?= nl2br(htmlspecialchars($text)) ?></p>
                 <?php if ($cta_text && $cta_url): ?>
                 <a href="<?= htmlspecialchars($cta_url) ?>" class="btn-primary mt-1"><?= htmlspecialchars($cta_text) ?></a>
@@ -51,6 +49,9 @@ $hasImages = !empty($proseImages);
             </div>
         </div>
         <?php else: ?>
+        <?php if ($heading): ?>
+        <h2><?= htmlspecialchars($heading) ?></h2>
+        <?php endif; ?>
         <p<?= $lead ? ' class="lead"' : '' ?>><?= nl2br(htmlspecialchars($text)) ?></p>
         <?php if ($cta_text && $cta_url): ?>
         <a href="<?= htmlspecialchars($cta_url) ?>" class="btn-primary mt-1"><?= htmlspecialchars($cta_text) ?></a>

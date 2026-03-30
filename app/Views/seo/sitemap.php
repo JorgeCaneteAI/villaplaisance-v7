@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 echo '<?xml version="1.0" encoding="UTF-8"?>';
-$base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+$base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
 $pages = [
     ['slug' => '/', 'priority' => '1.0', 'changefreq' => 'weekly'],
     ['slug' => '/chambres-d-hotes/', 'priority' => '0.9', 'changefreq' => 'monthly'],

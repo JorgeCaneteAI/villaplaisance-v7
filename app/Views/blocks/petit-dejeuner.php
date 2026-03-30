@@ -9,9 +9,9 @@ if (empty($pdImages)) $pdImages = ['petit-dejeuner.webp'];
 ?>
 <section class="section" id="petit-dejeuner">
     <div class="container prose-section">
-        <h2><?= htmlspecialchars($heading) ?></h2>
         <div class="prose-grid">
             <div class="prose-text">
+                <h2 class="prose-heading"><?= htmlspecialchars($heading) ?></h2>
                 <p><?= nl2br(htmlspecialchars($text)) ?></p>
             </div>
             <div class="prose-image">

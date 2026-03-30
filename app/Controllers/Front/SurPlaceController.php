@@ -24,7 +24,12 @@ class SurPlaceController extends BaseController
         } catch (\Throwable) {}
 
         $categories = array_unique(array_column($articles, 'category'));
-        $jsonLd = [];
+        $jsonLd = [
+            \SeoService::breadcrumbJsonLd([
+                ['name' => t('nav.home'), 'url' => APP_URL . '/'],
+                ['name' => t('nav.surplace')],
+            ]),
+        ];
 
         $this->render('front/surplace', compact('seo', 'articles', 'categories', 'jsonLd', 'lang'));
     }

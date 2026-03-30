@@ -289,7 +289,7 @@ $frQualityTotal = count($frQuality);
                             <!-- Aperçu SERP -->
                             <div class="serp-preview">
                                 <div class="serp-title"><?= htmlspecialchars($a['meta_title'] ?? $a['title'] ?? 'Titre de l\'article') ?></div>
-                                <div class="serp-url">v1.villaplaisance.fr/<?= $articleType === 'journal' ? 'journal' : 'sur-place' ?>/<?= htmlspecialchars($frArticle['slug'] ?? 'slug') ?></div>
+                                <div class="serp-url">villaplaisance.fr/<?= $articleType === 'journal' ? 'journal' : 'sur-place' ?>/<?= htmlspecialchars($frArticle['slug'] ?? 'slug') ?></div>
                                 <div class="serp-desc"><?= htmlspecialchars(mb_substr($a['meta_desc'] ?? $a['excerpt'] ?? 'Description de l\'article...', 0, 160)) ?></div>
                             </div>
                         </div>

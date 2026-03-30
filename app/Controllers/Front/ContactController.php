@@ -23,7 +23,13 @@ class ContactController extends BaseController
 
         $flash = $this->getFlash();
         $csrf = $this->csrf();
-        $jsonLd = [\SeoService::lodgingBusinessJsonLd()];
+        $jsonLd = [
+            \SeoService::lodgingBusinessJsonLd(),
+            \SeoService::breadcrumbJsonLd([
+                ['name' => t('nav.home'), 'url' => APP_URL . '/'],
+                ['name' => t('nav.contact')],
+            ]),
+        ];
 
         $this->render('front/contact', compact('seo', 'flash', 'csrf', 'jsonLd', 'lang'));
     }

@@ -9,19 +9,14 @@ try {
 }
 if (empty($items)) return;
 ?>
-<section class="section section-alt" id="chiffres">
-    <div class="container">
+<section class="section" id="chiffres">
+    <div class="container container-wide">
         <div class="stats-grid" data-animate="counters">
-            <?php foreach ($items as $stat): ?>
+            <?php foreach ($items as $i => $stat): ?>
             <div class="stat-item">
-                <?php if (!empty($stat['icon'])): ?>
-                <span class="stat-icon"><?= ImageService::icon($stat['icon'], 32) ?></span>
-                <?php endif; ?>
+                <span class="stat-number"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></span>
                 <span class="stat-value" data-count="<?= htmlspecialchars($stat['value']) ?>"><?= htmlspecialchars($stat['value']) ?></span>
                 <span class="stat-label"><?= htmlspecialchars($stat['label']) ?></span>
-                <?php if (!empty($stat['sublabel'])): ?>
-                <span class="stat-sublabel"><?= htmlspecialchars($stat['sublabel']) ?></span>
-                <?php endif; ?>
             </div>
             <?php endforeach; ?>
         </div>

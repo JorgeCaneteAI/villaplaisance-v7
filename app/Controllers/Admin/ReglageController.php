@@ -67,7 +67,7 @@ class ReglageController extends AdminBaseController
             return;
         }
 
-        $keys = ['phone', 'email', 'address', 'site_name'];
+        $keys = ['phone', 'email', 'address', 'site_name', 'ga4_measurement_id'];
 
         try {
             foreach ($keys as $key) {
@@ -84,6 +84,62 @@ class ReglageController extends AdminBaseController
             $this->flash('error', 'Erreur : ' . $e->getMessage());
         }
 
+        $this->redirect('/admin/reglages');
+    }
+
+    // --- PIN ---
+
+    public function savePin(): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect('/admin/reglages');
+            return;
+        }
+
+        $currentPin = trim($_POST['current_pin'] ?? '');
+        $newPin = trim($_POST['new_pin'] ?? '');
+        $confirmPin = trim($_POST['confirm_pin'] ?? '');
+        $userId = $_SESSION['admin_user_id'] ?? 0;
+
+        if (!$userId) {
+            $this->redirect('/admin/login');
+            return;
+        }
+
+        if ($newPin === '' && $currentPin === '' && $confirmPin === '') {
+            // Disable PIN
+            \Database::query("UPDATE vp_users SET pin = NULL WHERE id = ?", [$userId]);
+            $this->flash('success', 'Code PIN désactivé.');
+            $this->redirect('/admin/reglages');
+            return;
+        }
+
+        if (strlen($newPin) !== 6 || !ctype_digit($newPin)) {
+            $this->flash('error', 'Le code PIN doit contenir exactement 6 chiffres.');
+            $this->redirect('/admin/reglages');
+            return;
+        }
+
+        if ($newPin !== $confirmPin) {
+            $this->flash('error', 'Les codes PIN ne correspondent pas.');
+            $this->redirect('/admin/reglages');
+            return;
+        }
+
+        // Check current PIN if one exists
+        $user = \Database::fetchOne("SELECT pin FROM vp_users WHERE id = ?", [$userId]);
+        if (!empty($user['pin'])) {
+            if (!password_verify($currentPin, $user['pin'])) {
+                $this->flash('error', 'Code PIN actuel incorrect.');
+                $this->redirect('/admin/reglages');
+                return;
+            }
+        }
+
+        $hash = password_hash($newPin, PASSWORD_DEFAULT);
+        \Database::query("UPDATE vp_users SET pin = ? WHERE id = ?", [$hash, $userId]);
+        $this->flash('success', 'Code PIN mis à jour.');
         $this->redirect('/admin/reglages');
     }
 

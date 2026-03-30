@@ -31,6 +31,7 @@ require ROOT . '/app/Services/SeoService.php';
 require ROOT . '/app/Services/BlockService.php';
 require ROOT . '/app/Services/ImageService.php';
 require ROOT . '/app/Services/AnthropicService.php';
+require ROOT . '/app/Services/AnalyticsService.php';
 
 // PSR-4 minimal autoloader for App\ namespace
 spl_autoload_register(function (string $class): void {

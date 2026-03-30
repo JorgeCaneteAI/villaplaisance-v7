@@ -16,15 +16,36 @@
         <a href="/admin" class="topbar-logo">VP Admin</a>
         <nav class="topbar-nav">
             <a href="/admin/dashboard" class="topbar-link">Dashboard</a>
-            <a href="/admin/articles" class="topbar-link">Articles</a>
-            <a href="/admin/messages" class="topbar-link">Messages</a>
-            <a href="/admin/avis" class="topbar-link">Avis</a>
-            <a href="/admin/livret" class="topbar-link">Livret</a>
-            <a href="/admin/media" class="topbar-link">Médias</a>
-            <a href="/admin/pages" class="topbar-link">Pages CMS</a>
-            <a href="/admin/pieces" class="topbar-link">Chambres</a>
-            <a href="/admin/redirects" class="topbar-link">Redirections</a>
-            <a href="/admin/seo-files" class="topbar-link">SEO</a>
+            <a href="/admin/analytics" class="topbar-link">Statistiques</a>
+
+            <div class="topbar-group">
+                <button class="topbar-group-btn">Contenu ▾</button>
+                <div class="topbar-dropdown">
+                    <a href="/admin/pages" class="topbar-dd-link">Pages CMS</a>
+                    <a href="/admin/articles" class="topbar-dd-link">Articles</a>
+                    <a href="/admin/pieces" class="topbar-dd-link">Chambres</a>
+                    <a href="/admin/host" class="topbar-dd-link">Votre hôte</a>
+                    <a href="/admin/livret" class="topbar-dd-link">Livret</a>
+                </div>
+            </div>
+
+            <div class="topbar-group">
+                <button class="topbar-group-btn">Interactions ▾</button>
+                <div class="topbar-dropdown">
+                    <a href="/admin/messages" class="topbar-dd-link">Messages</a>
+                    <a href="/admin/avis" class="topbar-dd-link">Avis</a>
+                </div>
+            </div>
+
+            <div class="topbar-group">
+                <button class="topbar-group-btn">Médias & SEO ▾</button>
+                <div class="topbar-dropdown">
+                    <a href="/admin/media" class="topbar-dd-link">Médias</a>
+                    <a href="/admin/seo-files" class="topbar-dd-link">SEO</a>
+                    <a href="/admin/redirects" class="topbar-dd-link">Redirections</a>
+                </div>
+            </div>
+
             <a href="/admin/reglages" class="topbar-link">Réglages</a>
         </nav>
         <div class="topbar-right">

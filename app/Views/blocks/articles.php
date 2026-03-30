@@ -20,18 +20,20 @@ $baseUrl = $type === 'journal' ? '/journal/' : '/sur-place/';
         <h2><?= htmlspecialchars($heading) ?></h2>
         <div class="articles-grid">
             <?php foreach ($articles as $article): ?>
-            <article class="article-card">
-                <div class="article-image">
-                    <?= ImageService::img($article['cover_image'] ?? 'journal-placeholder.webp', htmlspecialchars($article['title']), 800, 500) ?>
-                </div>
-                <div class="article-body">
-                    <?php if (!empty($article['category'])): ?>
-                    <span class="article-category"><?= htmlspecialchars($article['category']) ?></span>
-                    <?php endif; ?>
-                    <h3><a href="<?= $baseUrl . htmlspecialchars($article['slug']) ?>"><?= htmlspecialchars($article['title']) ?></a></h3>
-                    <p><?= htmlspecialchars($article['excerpt'] ?? '') ?></p>
-                </div>
-            </article>
+            <a href="<?= $baseUrl . htmlspecialchars($article['slug']) ?>" class="article-card-link">
+                <article class="article-card">
+                    <div class="article-image">
+                        <?= ImageService::img($article['cover_image'] ?? 'journal-placeholder.webp', htmlspecialchars($article['title']), 800, 500) ?>
+                    </div>
+                    <div class="article-body">
+                        <?php if (!empty($article['category'])): ?>
+                        <span class="article-category"><?= htmlspecialchars($article['category']) ?></span>
+                        <?php endif; ?>
+                        <h3><?= htmlspecialchars($article['title']) ?></h3>
+                        <p><?= htmlspecialchars($article['excerpt'] ?? '') ?></p>
+                    </div>
+                </article>
+            </a>
             <?php endforeach; ?>
         </div>
         <p class="text-center" style="margin-top:var(--space-6)">

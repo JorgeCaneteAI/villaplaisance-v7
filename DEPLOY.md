@@ -19,8 +19,8 @@ Dans **cPanel** > **Terminal** :
 
 ```bash
 # Copier le code vers le web root
-cp -R /home/efkz3012/repositories/villaplaisance-v7/* /home/efkz3012/v1.villaplaisance.fr/
-chmod -R 755 /home/efkz3012/v1.villaplaisance.fr/
+cp -R /home/efkz3012/repositories/villaplaisance-v7/* /home/efkz3012/villaplaisance.fr/
+chmod -R 755 /home/efkz3012/villaplaisance.fr/
 ```
 
 ## Etape 4 — Creer le .env de production
@@ -28,13 +28,13 @@ chmod -R 755 /home/efkz3012/v1.villaplaisance.fr/
 Dans **cPanel** > **Terminal** :
 
 ```bash
-cat > /home/efkz3012/v1.villaplaisance.fr/.env << 'EOF'
+cat > /home/efkz3012/villaplaisance.fr/.env << 'EOF'
 DB_HOST=localhost
 DB_NAME=efkz3012_VPV7
 DB_USER=efkz3012_vpuser
 DB_PASS=TON_MOT_DE_PASSE_ICI
 APP_ENV=production
-APP_URL=https://v1.villaplaisance.fr
+APP_URL=https://villaplaisance.fr
 ADMIN_EMAIL=contact@villaplaisance.fr
 EOF
 ```
@@ -46,7 +46,7 @@ EOF
 Dans **cPanel** > **Terminal** :
 
 ```bash
-cd /home/efkz3012/v1.villaplaisance.fr
+cd /home/efkz3012/villaplaisance.fr
 
 # 1. Migration (cree les tables)
 php seeds/001_migration.php
@@ -109,8 +109,8 @@ php seeds/022_livret_complet.php
 
 ## Etape 6 — Verifier
 
-1. Ouvrir `https://v1.villaplaisance.fr/` — la page d'accueil doit s'afficher
-2. Ouvrir `https://v1.villaplaisance.fr/admin/login` — se connecter avec :
+1. Ouvrir `https://villaplaisance.fr/` — la page d'accueil doit s'afficher
+2. Ouvrir `https://villaplaisance.fr/admin/login` — se connecter avec :
    - Email : `contact@villaplaisance.fr`
    - Mot de passe : `VillaP@2026!!` (defini dans seed 002)
    - **CHANGER CE MOT DE PASSE IMMEDIATEMENT** dans Reglages
@@ -118,7 +118,7 @@ php seeds/022_livret_complet.php
 ## Etape 7 — Uploads
 
 Les photos ne sont pas dans le repo Git. Transferer le dossier `public/uploads/` via **cPanel** > **Gestionnaire de fichiers** :
-- Destination : `/home/efkz3012/v1.villaplaisance.fr/public/uploads/`
+- Destination : `/home/efkz3012/villaplaisance.fr/public/uploads/`
 
 ## Rappels
 

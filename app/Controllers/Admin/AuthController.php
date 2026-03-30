@@ -47,11 +47,86 @@ class AuthController extends AdminBaseController
 
         // Regenerate session
         session_regenerate_id(true);
-        $_SESSION['admin_authenticated'] = true;
         $_SESSION['admin_user_id'] = $user['id'];
         $_SESSION['admin_user_name'] = $user['name'];
         $_SESSION['admin_user_email'] = $user['email'];
 
+        // If user has a PIN, require it
+        if (!empty($user['pin'])) {
+            $_SESSION['admin_pin_pending'] = true;
+            $_SESSION['admin_authenticated'] = false;
+            $this->redirect('/admin/pin');
+            return;
+        }
+
+        $_SESSION['admin_authenticated'] = true;
+        $this->redirect('/admin/dashboard');
+    }
+
+    public function showPin(): void
+    {
+        if (empty($_SESSION['admin_pin_pending'])) {
+            $this->redirect('/admin/login');
+            return;
+        }
+        $csrf = $this->csrf();
+        $flash = $this->getFlash();
+        require ROOT . '/app/Views/admin/pin.php';
+    }
+
+    public function verifyPin(): void
+    {
+        if (empty($_SESSION['admin_pin_pending'])) {
+            $this->redirect('/admin/login');
+            return;
+        }
+
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect('/admin/pin');
+            return;
+        }
+
+        $pin = trim($_POST['pin'] ?? '');
+        $userId = $_SESSION['admin_user_id'] ?? 0;
+
+        if ($pin === '' || !$userId) {
+            $this->flash('error', 'Veuillez saisir votre code PIN.');
+            $this->redirect('/admin/pin');
+            return;
+        }
+
+        // Track attempts
+        $_SESSION['admin_pin_attempts'] = ($_SESSION['admin_pin_attempts'] ?? 0) + 1;
+
+        if ($_SESSION['admin_pin_attempts'] > 5) {
+            unset($_SESSION['admin_pin_pending'], $_SESSION['admin_pin_attempts']);
+            session_destroy();
+            session_start();
+            $this->flash('error', 'Trop de tentatives. Veuillez vous reconnecter.');
+            $this->redirect('/admin/login');
+            return;
+        }
+
+        try {
+            $user = \Database::fetchOne("SELECT pin FROM vp_users WHERE id = ?", [$userId]);
+        } catch (\Throwable) {
+            $this->flash('error', 'Erreur de base de données.');
+            $this->redirect('/admin/pin');
+            return;
+        }
+
+        if (!$user || !password_verify($pin, $user['pin'])) {
+            $remaining = 5 - $_SESSION['admin_pin_attempts'];
+            $this->flash('error', "Code PIN incorrect. {$remaining} tentative(s) restante(s).");
+            $this->redirect('/admin/pin');
+            return;
+        }
+
+        // PIN correct
+        unset($_SESSION['admin_pin_pending'], $_SESSION['admin_pin_attempts']);
+        $_SESSION['admin_authenticated'] = true;
+        session_regenerate_id(true);
         $this->redirect('/admin/dashboard');
     }
 

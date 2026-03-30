@@ -15,7 +15,13 @@ class ExterieursController extends BaseController
             'Piscine privée 12×6m, jardin provençal, terrasses ombragées. Les espaces extérieurs de Villa Plaisance à Bédarrides.'
         );
 
-        $jsonLd = [\SeoService::lodgingBusinessJsonLd()];
+        $jsonLd = [
+            \SeoService::lodgingBusinessJsonLd(),
+            \SeoService::breadcrumbJsonLd([
+                ['name' => t('nav.home'), 'url' => APP_URL . '/'],
+                ['name' => t('nav.exterieurs')],
+            ]),
+        ];
 
         $this->render('front/exterieurs', compact('seo', 'jsonLd', 'lang'));
     }

@@ -1,5 +1,6 @@
 <section class="section livret-header">
     <div class="container" style="text-align:center">
+        <p class="livret-welcome">Bienvenue chez vous</p>
         <h1><?= t('livret.title') ?></h1>
         <div class="livret-type-nav">
             <a href="<?= \LangService::url('livret') ?>?type=bb" class="<?= $type === 'bb' ? 'active' : '' ?>"><?= t('livret.type_bb') ?></a>
@@ -18,12 +19,15 @@
 
 <?php if (!empty($sections)): ?>
 <div class="container container-narrow">
-    <?php foreach ($sections as $section): ?>
-    <article class="livret-section">
-        <h2><?= htmlspecialchars($section['section_title']) ?></h2>
-        <div class="livret-content"><?= nl2br(htmlspecialchars($section['content'])) ?></div>
-    </article>
-    <?php endforeach; ?>
+    <div class="livret-sections">
+        <?php foreach ($sections as $i => $section): ?>
+        <article class="livret-section">
+            <div class="livret-section-number" aria-hidden="true"><?= str_pad((string)($i + 1), 2, '0', STR_PAD_LEFT) ?></div>
+            <h2><?= htmlspecialchars($section['section_title']) ?></h2>
+            <div class="livret-content"><?= nl2br(htmlspecialchars($section['content'])) ?></div>
+        </article>
+        <?php endforeach; ?>
+    </div>
 </div>
 <?php else: ?>
 <div class="container container-narrow">
@@ -35,6 +39,7 @@
 <section class="section livret-message-section">
     <div class="container container-narrow">
         <h2 style="text-align:center"><?= t('livret.message_title') ?></h2>
+        <p class="livret-message-intro">Une question, une remarque, un besoin ? On vous répond rapidement.</p>
         <form method="POST" action="<?= \LangService::url('livret') ?>?type=<?= htmlspecialchars($type) ?>" class="contact-form" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
             <!-- Honeypot -->

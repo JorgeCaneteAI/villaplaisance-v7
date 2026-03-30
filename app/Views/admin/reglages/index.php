@@ -28,8 +28,39 @@
             <input type="text" id="address" name="address" value="<?= htmlspecialchars($settings['address'] ?? '') ?>">
         </div>
     </div>
+    <div class="form-group" style="margin-top:1rem">
+        <label for="ga4_measurement_id">Google Analytics GA4 (Measurement ID)</label>
+        <input type="text" id="ga4_measurement_id" name="ga4_measurement_id" value="<?= htmlspecialchars($settings['ga4_measurement_id'] ?? '') ?>" placeholder="G-XXXXXXXXXX" style="max-width:300px">
+        <small style="color:#888;display:block;margin-top:0.25rem">Laissez vide pour désactiver Google Analytics.</small>
+    </div>
     <div class="mt-1">
         <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+    </div>
+</form>
+
+<!-- ═══════════════════════════════════════════
+     SÉCURITÉ — CODE PIN
+     ═══════════════════════════════════════════ -->
+<form method="POST" action="/admin/reglages/pin" class="admin-card">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+    <h2>Code PIN de sécurité</h2>
+    <p style="font-size:0.8rem;color:#888;margin-bottom:1rem">Un code PIN à 6 chiffres sera demandé après la saisie du mot de passe. Laissez tous les champs vides et validez pour désactiver le PIN.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:600px">
+        <div class="form-group">
+            <label for="current_pin">PIN actuel</label>
+            <input type="password" id="current_pin" name="current_pin" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="••••••">
+        </div>
+        <div class="form-group">
+            <label for="new_pin">Nouveau PIN</label>
+            <input type="password" id="new_pin" name="new_pin" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 chiffres">
+        </div>
+        <div class="form-group">
+            <label for="confirm_pin">Confirmer PIN</label>
+            <input type="password" id="confirm_pin" name="confirm_pin" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6 chiffres">
+        </div>
+    </div>
+    <div class="mt-1">
+        <button type="submit" class="btn btn-primary btn-sm">Enregistrer le PIN</button>
     </div>
 </form>
 

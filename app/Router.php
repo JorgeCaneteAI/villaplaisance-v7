@@ -57,6 +57,9 @@ class Router
     private function dispatchFront(): void
     {
         $uri = $this->uri;
+
+        // Track page view
+        \AnalyticsService::track($uri);
         $slugMap = $this->getSlugToPageMap();
 
         // Normalize: strip trailing slash for matching
@@ -73,6 +76,7 @@ class Router
             '/sur-place' => ['Controllers\\Front\\SurPlaceController', 'index'],
             '/contact' => ['Controllers\\Front\\ContactController', 'index'],
             '/livret' => ['Controllers\\Front\\LivretController', 'index'],
+            '/votre-hote' => ['Controllers\\Front\\HoteController', 'index'],
             '/mentions-legales' => ['Controllers\\Front\\LegalController', 'mentions'],
             '/politique-confidentialite' => ['Controllers\\Front\\LegalController', 'confidentialite'],
             '/plan-du-site' => ['Controllers\\Front\\LegalController', 'planDuSite'],
@@ -126,6 +130,10 @@ class Router
             $this->callController('Controllers\\Admin\\AuthController', 'logout');
             return;
         }
+        if ($uri === '/admin/pin') {
+            $this->callController('Controllers\\Admin\\AuthController', $_SERVER['REQUEST_METHOD'] === 'POST' ? 'verifyPin' : 'showPin');
+            return;
+        }
         if ($uri === '/admin/forgot-password') {
             $this->callController('Controllers\\Admin\\AuthController', $_SERVER['REQUEST_METHOD'] === 'POST' ? 'forgotPassword' : 'showForgotPassword');
             return;
@@ -145,6 +153,7 @@ class Router
         $adminRoutes = [
             '/admin' => ['Controllers\\Admin\\DashboardController', 'index'],
             '/admin/dashboard' => ['Controllers\\Admin\\DashboardController', 'index'],
+            '/admin/analytics' => ['Controllers\\Admin\\AnalyticsController', 'index'],
             '/admin/articles' => ['Controllers\\Admin\\ArticleController', 'index'],
             '/admin/articles/create' => ['Controllers\\Admin\\ArticleController', 'create'],
             '/admin/messages' => ['Controllers\\Admin\\MessageController', 'index'],
@@ -157,6 +166,7 @@ class Router
             '/admin/pieces' => ['Controllers\\Admin\\PieceController', 'index'],
             '/admin/redirects' => ['Controllers\\Admin\\RedirectController', 'index'],
             '/admin/seo-files' => ['Controllers\\Admin\\SeoFileController', 'index'],
+            '/admin/host' => ['Controllers\\Admin\\HostController', 'index'],
         ];
 
         $normalized = rtrim($uri, '/');
@@ -236,6 +246,28 @@ class Router
             return;
         }
 
+        // Host profile
+        if ($normalized === '/admin/host/save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\HostController', 'save');
+            return;
+        }
+        if ($normalized === '/admin/host/block/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\HostController', 'createBlock');
+            return;
+        }
+        if (preg_match('#^/admin/host/block/(\d+)/update$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\HostController', 'updateBlock', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/host/block/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\HostController', 'deleteBlock', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/host/block/(\d+)/move$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\HostController', 'moveBlock', ['id' => (int)$m[1]]);
+            return;
+        }
+
         // Media
         if ($normalized === '/admin/media/upload' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->callController('Controllers\\Admin\\MediaController', 'upload');
@@ -255,6 +287,10 @@ class Router
         }
 
         // Reglages save
+        if ($normalized === '/admin/reglages/pin' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\ReglageController', 'savePin');
+            return;
+        }
         if ($normalized === '/admin/reglages/save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->callController('Controllers\\Admin\\ReglageController', 'save');
             return;
@@ -514,7 +550,7 @@ class Router
         try {
             $file = \Database::fetchOne("SELECT content FROM vp_seo_files WHERE filename = 'robots.txt'");
             if ($file) {
-                $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+                $base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
                 echo str_replace('{{BASE_URL}}', $base, $file['content']);
                 return;
             }
@@ -541,7 +577,7 @@ class Router
             $file = \Database::fetchOne("SELECT content FROM vp_seo_files WHERE filename = ?", [$filename]);
             if ($file) {
                 header('Content-Type: text/plain; charset=utf-8');
-                $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+                $base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
                 echo str_replace('{{BASE_URL}}', $base, $file['content']);
                 return true;
             }

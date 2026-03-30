@@ -5,6 +5,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <?php $ga4Id = \AnalyticsService::getGA4Id(); ?>
+    <?php if ($ga4Id): ?>
+    <script>
+    window.vpGA4Id='<?= htmlspecialchars($ga4Id) ?>';
+    function vpLoadGA(){
+        if(document.cookie.indexOf('vp_consent=accept')!==-1&&window.vpGA4Id&&!window.vpGALoaded){
+            var s=document.createElement('script');s.async=true;
+            s.src='https://www.googletagmanager.com/gtag/js?id='+window.vpGA4Id;
+            document.head.appendChild(s);
+            window.dataLayer=window.dataLayer||[];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js',new Date());gtag('config',window.vpGA4Id);
+            window.vpGALoaded=true;
+        }
+    }
+    vpLoadGA();
+    </script>
+    <?php endif; ?>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
     <title><?= htmlspecialchars($seo['title'] ?? 'Villa Plaisance') ?></title>
     <meta name="description" content="<?= htmlspecialchars($seo['description'] ?? '') ?>">
 
@@ -36,7 +61,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Caveat:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -150,7 +175,51 @@
             </div>
             <p class="footer-copy"><?= t('footer.rights', ['year' => date('Y')]) ?></p>
         </div>
+        <div class="footer-giant" aria-hidden="true">Villa Plaisance</div>
     </footer>
+
+    <!-- Cookie consent RGPD -->
+    <?php if (!isset($_COOKIE['vp_consent'])): ?>
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Gestion des cookies">
+        <div class="cookie-inner">
+            <p class="cookie-text">Ce site utilise des cookies pour mesurer l'audience et améliorer votre expérience. Vous pouvez accepter ou refuser leur utilisation.</p>
+            <div class="cookie-actions">
+                <button id="cookie-refuse" class="cookie-btn cookie-btn-refuse">Refuser</button>
+                <button id="cookie-accept" class="cookie-btn cookie-btn-accept">Accepter</button>
+            </div>
+        </div>
+    </div>
+    <style>
+    .cookie-banner{position:fixed;bottom:0;left:0;right:0;z-index:10000;background:var(--dark);color:#fff;padding:1rem var(--gutter);transform:translateY(0);transition:transform 0.4s ease}
+    .cookie-banner.hidden{transform:translateY(100%);pointer-events:none}
+    .cookie-inner{max-width:var(--container);margin:0 auto;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+    .cookie-text{flex:1;font-size:0.8rem;line-height:1.5;min-width:250px;color:rgba(255,255,255,0.85)}
+    .cookie-actions{display:flex;gap:0.75rem;flex-shrink:0}
+    .cookie-btn{padding:0.5rem 1.25rem;border-radius:4px;font-size:0.8rem;font-family:inherit;cursor:pointer;border:none;transition:background 0.2s}
+    .cookie-btn-refuse{background:transparent;color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.3)}
+    .cookie-btn-refuse:hover{background:rgba(255,255,255,0.1);color:#fff}
+    .cookie-btn-accept{background:var(--accent);color:#fff}
+    .cookie-btn-accept:hover{background:#6d8a7b}
+    @media(max-width:600px){.cookie-inner{flex-direction:column;text-align:center}.cookie-actions{width:100%;justify-content:center}}
+    </style>
+    <script>
+    (function(){
+        var banner=document.getElementById('cookie-banner');
+        if(!banner)return;
+        function setCookie(v){
+            var d=new Date();d.setTime(d.getTime()+180*24*60*60*1000);
+            document.cookie='vp_consent='+v+';expires='+d.toUTCString()+';path=/;SameSite=Lax';
+        }
+        document.getElementById('cookie-accept').addEventListener('click',function(){
+            setCookie('accept');banner.classList.add('hidden');
+            if(typeof vpLoadGA==='function')vpLoadGA();
+        });
+        document.getElementById('cookie-refuse').addEventListener('click',function(){
+            setCookie('refuse');banner.classList.add('hidden');
+        });
+    })();
+    </script>
+    <?php endif; ?>
 
     <script src="/assets/js/main.js" defer></script>
 </body>

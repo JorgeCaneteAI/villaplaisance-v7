@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-$base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+$base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
 ?>
 User-agent: *
 Allow: /

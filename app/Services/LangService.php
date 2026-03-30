@@ -7,6 +7,11 @@ class LangService
     private static array $translations = [];
     private static array $slugMap = [];
 
+    public static function current(): string
+    {
+        return self::$currentLang;
+    }
+
     public static function init(string $lang = 'fr'): void
     {
         if (!in_array($lang, SUPPORTED_LANGS, true)) {

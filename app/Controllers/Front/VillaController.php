@@ -15,7 +15,13 @@ class VillaController extends BaseController
             '4 chambres, piscine privée 12×6m, jardin provençal. Villa entière en exclusivité juillet-août, jusqu\'à 10 personnes, entre Avignon et Orange.'
         );
 
-        $jsonLd = [\SeoService::vacationRentalJsonLd()];
+        $jsonLd = [
+            \SeoService::vacationRentalJsonLd(),
+            \SeoService::breadcrumbJsonLd([
+                ['name' => t('nav.home'), 'url' => APP_URL . '/'],
+                ['name' => t('nav.villa')],
+            ]),
+        ];
 
         $faqs = [];
         try {

@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/efkz3012/v1.villaplaisance.fr/
+    - export DEPLOYPATH=/home/efkz3012/villaplaisance.fr/
     - /bin/cp -R * $DEPLOYPATH
     - /bin/cp .htaccess $DEPLOYPATH/public/.htaccess 2>/dev/null; true
     - chmod -R 755 $DEPLOYPATH

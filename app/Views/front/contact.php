@@ -1,3 +1,13 @@
+<!-- Breadcrumb -->
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+    <div class="container">
+        <ol>
+            <li><a href="<?= LangService::url('accueil') ?>"><?= t('nav.home') ?></a></li>
+            <li aria-current="page"><?= t('nav.contact') ?></li>
+        </ol>
+    </div>
+</nav>
+
 <?php
 // Render hero from CMS
 $heroSections = BlockService::getSections('contact', $lang);

@@ -39,7 +39,7 @@ class SeoService
 
     public static function canonical(string $slug, string $lang): string
     {
-        $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+        $base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
         if ($slug === 'accueil' && $lang === 'fr') {
             return $base . '/';
         }
@@ -49,7 +49,7 @@ class SeoService
     public static function hreflang(string $page): array
     {
         $links = [];
-        $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+        $base = APP_ENV === 'production' ? 'https://villaplaisance.fr' : APP_URL;
         foreach (SUPPORTED_LANGS as $lang) {
             $url = $base . LangService::url($page, $lang);
             $links[] = ['lang' => $lang, 'url' => $url];
