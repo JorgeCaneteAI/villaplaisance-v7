@@ -43,6 +43,13 @@ class Router
             return;
         }
 
+        // Serve custom SEO files from database (ads.txt, humans.txt, security.txt, etc.)
+        if (preg_match('#^/([a-z0-9._-]+\.txt)$#i', $this->uri, $m)) {
+            if ($this->serveSeoFile($m[1])) {
+                return;
+            }
+        }
+
         // Front routes
         $this->dispatchFront();
     }
@@ -65,6 +72,7 @@ class Router
             '/journal' => ['Controllers\\Front\\JournalController', 'index'],
             '/sur-place' => ['Controllers\\Front\\SurPlaceController', 'index'],
             '/contact' => ['Controllers\\Front\\ContactController', 'index'],
+            '/livret' => ['Controllers\\Front\\LivretController', 'index'],
             '/mentions-legales' => ['Controllers\\Front\\LegalController', 'mentions'],
             '/politique-confidentialite' => ['Controllers\\Front\\LegalController', 'confidentialite'],
             '/plan-du-site' => ['Controllers\\Front\\LegalController', 'planDuSite'],
@@ -147,6 +155,8 @@ class Router
             '/admin/pages' => ['Controllers\\Admin\\PageController', 'index'],
             '/admin/sections' => ['Controllers\\Admin\\SectionController', 'index'],
             '/admin/pieces' => ['Controllers\\Admin\\PieceController', 'index'],
+            '/admin/redirects' => ['Controllers\\Admin\\RedirectController', 'index'],
+            '/admin/seo-files' => ['Controllers\\Admin\\SeoFileController', 'index'],
         ];
 
         $normalized = rtrim($uri, '/');
@@ -190,7 +200,19 @@ class Router
             return;
         }
 
-        // Avis
+        // Avis CRUD
+        if ($normalized === '/admin/avis/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AvisController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/avis/(\d+)/edit$#', $normalized, $m)) {
+            $this->callController('Controllers\\Admin\\AvisController', 'edit', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/avis/(\d+)/update$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AvisController', 'update', ['id' => (int)$m[1]]);
+            return;
+        }
         if (preg_match('#^/admin/avis/(\d+)/toggle$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->callController('Controllers\\Admin\\AvisController', 'toggle', ['id' => (int)$m[1]]);
             return;
@@ -203,6 +225,14 @@ class Router
         // Livret
         if ($normalized === '/admin/livret/save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->callController('Controllers\\Admin\\LivretController', 'save');
+            return;
+        }
+        if ($normalized === '/admin/livret/save-password' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\LivretController', 'savePassword');
+            return;
+        }
+        if (preg_match('#^/admin/livret/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\LivretController', 'delete', ['id' => (int)$m[1]]);
             return;
         }
 
@@ -290,6 +320,32 @@ class Router
             return;
         }
 
+        // API — AI article generation
+        if ($normalized === '/admin/api/generate-article' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            @ini_set('display_errors', '0');
+            ob_start();
+            header('Content-Type: application/json');
+            $input = json_decode(file_get_contents('php://input'), true);
+            $type = $input['type'] ?? 'journal';
+            $title = trim($input['title'] ?? '');
+            $subtitle = trim($input['subtitle'] ?? '');
+            $category = trim($input['category'] ?? '');
+            if ($title === '') {
+                echo json_encode(['error' => 'Titre requis']);
+                return;
+            }
+            $result = \AnthropicService::generateArticle($type, $title, $subtitle, $category);
+            ob_end_clean();
+            if ($result === null) {
+                echo json_encode(['error' => 'Erreur API Anthropic. Vérifiez votre clé API.']);
+            } elseif (isset($result['_error'])) {
+                echo json_encode(['error' => $result['_error']]);
+            } else {
+                echo json_encode(['success' => true, 'data' => $result]);
+            }
+            return;
+        }
+
         // API — media list for picker
         if ($normalized === '/admin/api/media-list') {
             header('Content-Type: application/json');
@@ -338,6 +394,84 @@ class Router
             return;
         }
 
+        // Proximites CRUD
+        if (preg_match('#^/admin/proximites/(\d+)/save$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\ProximiteController', 'save', ['id' => (int)$m[1]]);
+            return;
+        }
+        if ($normalized === '/admin/proximites/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\ProximiteController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/proximites/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\ProximiteController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
+        // FAQ CRUD
+        if (preg_match('#^/admin/faq/(\d+)/save$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\FaqController', 'save', ['id' => (int)$m[1]]);
+            return;
+        }
+        if ($normalized === '/admin/faq/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\FaqController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/faq/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\FaqController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
+        // Stats CRUD
+        if (preg_match('#^/admin/stats/(\d+)/save$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\StatController', 'save', ['id' => (int)$m[1]]);
+            return;
+        }
+        if ($normalized === '/admin/stats/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\StatController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/stats/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\StatController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
+        // Redirects CRUD
+        if ($normalized === '/admin/redirects/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\RedirectController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/redirects/(\d+)/update$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\RedirectController', 'update', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/redirects/(\d+)/toggle$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\RedirectController', 'toggle', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/redirects/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\RedirectController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
+        // SEO Files CRUD
+        if ($normalized === '/admin/seo-files/create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\SeoFileController', 'create');
+            return;
+        }
+        if (preg_match('#^/admin/seo-files/(\d+)/edit$#', $normalized, $m)) {
+            $this->callController('Controllers\\Admin\\SeoFileController', 'edit', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/seo-files/(\d+)/update$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\SeoFileController', 'update', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/seo-files/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\SeoFileController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
         // 404 admin
         http_response_code(404);
         echo '<h1>404 — Page admin introuvable</h1>';
@@ -377,12 +511,41 @@ class Router
     private function serveRobots(): void
     {
         header('Content-Type: text/plain; charset=utf-8');
+        try {
+            $file = \Database::fetchOne("SELECT content FROM vp_seo_files WHERE filename = 'robots.txt'");
+            if ($file) {
+                $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+                echo str_replace('{{BASE_URL}}', $base, $file['content']);
+                return;
+            }
+        } catch (\Throwable) {}
         require ROOT . '/app/Views/seo/robots.php';
     }
 
     private function serveLlms(): void
     {
         header('Content-Type: text/plain; charset=utf-8');
+        try {
+            $file = \Database::fetchOne("SELECT content FROM vp_seo_files WHERE filename = 'llms.txt'");
+            if ($file) {
+                echo $file['content'];
+                return;
+            }
+        } catch (\Throwable) {}
         require ROOT . '/app/Views/seo/llms.php';
+    }
+
+    private function serveSeoFile(string $filename): bool
+    {
+        try {
+            $file = \Database::fetchOne("SELECT content FROM vp_seo_files WHERE filename = ?", [$filename]);
+            if ($file) {
+                header('Content-Type: text/plain; charset=utf-8');
+                $base = APP_ENV === 'production' ? 'https://v1.villaplaisance.fr' : APP_URL;
+                echo str_replace('{{BASE_URL}}', $base, $file['content']);
+                return true;
+            }
+        } catch (\Throwable) {}
+        return false;
     }
 }

@@ -12,32 +12,23 @@ class SectionController extends AdminBaseController
             $pages = \Database::fetchAll("SELECT DISTINCT slug FROM vp_pages WHERE lang = 'fr' ORDER BY slug ASC");
         } catch (\Throwable) {}
 
-        $sections = [];
+        $langs = SUPPORTED_LANGS;
+
+        // Load sections for all languages
+        $sectionsByLang = [];
         if ($page_slug !== '') {
-            $sections = \BlockService::getAllSections($page_slug, 'fr');
+            foreach ($langs as $l) {
+                $sectionsByLang[$l] = \BlockService::getAllSections($page_slug, $l);
+            }
         }
+        // FR sections are the reference
+        $sections = $sectionsByLang['fr'] ?? [];
 
         $blockTypes = \BlockService::getBlockTypes();
         $csrf = $this->csrf();
 
         $body_class = '';
         $preview_url = '';
-        if ($page_slug !== '') {
-            $frontUrls = [
-                'accueil'                    => '/',
-                'chambres-d-hotes'           => '/chambres-d-hotes',
-                'location-villa-provence'    => '/location-villa-provence',
-                'espaces-exterieurs'         => '/espaces-exterieurs',
-                'journal'                    => '/journal',
-                'sur-place'                  => '/sur-place',
-                'contact'                    => '/contact',
-                'mentions-legales'           => '/mentions-legales',
-                'politique-confidentialite'  => '/politique-confidentialite',
-                'plan-du-site'               => '/plan-du-site',
-            ];
-            $preview_url = $frontUrls[$page_slug] ?? '/' . $page_slug;
-            $body_class = 'has-preview';
-        }
 
         // Load pieces for "cartes" blocks inline editing
         $pieces = [];
@@ -45,7 +36,34 @@ class SectionController extends AdminBaseController
             $pieces = \Database::fetchAll("SELECT * FROM vp_pieces WHERE lang = 'fr' ORDER BY offer ASC, position ASC");
         } catch (\Throwable) {}
 
-        $this->render('admin/sections/index', compact('pages', 'sections', 'page_slug', 'blockTypes', 'csrf', 'body_class', 'preview_url', 'pieces'));
+        // Load FAQ items grouped by page_slug and lang
+        $faqBySlugLang = [];
+        try {
+            $allFaq = \Database::fetchAll("SELECT * FROM vp_faq ORDER BY page_slug, lang, position");
+            foreach ($allFaq as $f) {
+                $faqBySlugLang[$f['page_slug']][$f['lang']][] = $f;
+            }
+        } catch (\Throwable) {}
+
+        // Load proximites grouped by lang
+        $proxByLang = [];
+        try {
+            $allProx = \Database::fetchAll("SELECT * FROM vp_proximites ORDER BY lang, position");
+            foreach ($allProx as $px) {
+                $proxByLang[$px['lang']][] = $px;
+            }
+        } catch (\Throwable) {}
+
+        // Load stats grouped by lang
+        $statsByLang = [];
+        try {
+            $allStats = \Database::fetchAll("SELECT * FROM vp_stats ORDER BY lang, position");
+            foreach ($allStats as $s) {
+                $statsByLang[$s['lang']][] = $s;
+            }
+        } catch (\Throwable) {}
+
+        $this->render('admin/sections/index', compact('pages', 'sections', 'sectionsByLang', 'langs', 'page_slug', 'blockTypes', 'csrf', 'body_class', 'preview_url', 'pieces', 'faqBySlugLang', 'statsByLang', 'proxByLang'));
     }
 
     public function edit(int $id): void
@@ -103,6 +121,33 @@ class SectionController extends AdminBaseController
         ];
 
         \BlockService::saveSection($id, $data);
+
+        // Propagate shared fields to other language sections
+        $sharedKeys = ['image', 'image_alt', 'compact', 'lead', 'dark', 'offer', 'images',
+                       'limit', 'offer_filter', 'type', 'page_slug', 'style', 'button_url'];
+        $savedFields = json_decode($contentJson, true) ?: [];
+        $sharedData = [];
+        foreach ($sharedKeys as $sk) {
+            if (array_key_exists($sk, $savedFields)) {
+                $sharedData[$sk] = $savedFields[$sk];
+            }
+        }
+        if (!empty($sharedData) && !empty($section['position'])) {
+            $otherSections = \Database::fetchAll(
+                "SELECT id, content FROM vp_sections WHERE page_slug = ? AND position = ? AND id != ?",
+                [$pageSlug, $section['position'], $id]
+            );
+            foreach ($otherSections as $other) {
+                $otherContent = json_decode($other['content'], true) ?: [];
+                foreach ($sharedData as $sk => $sv) {
+                    $otherContent[$sk] = $sv;
+                }
+                \Database::update('vp_sections', [
+                    'content' => json_encode($otherContent, JSON_UNESCAPED_UNICODE),
+                ], 'id = ?', [$other['id']]);
+            }
+        }
+
         $this->flash('success', 'Section « ' . $data['title'] . ' » mise à jour.');
         $this->redirect('/admin/sections/page/' . $pageSlug);
     }
@@ -122,18 +167,24 @@ class SectionController extends AdminBaseController
             [$pageSlug]
         );
 
-        $data = [
-            'page_slug' => $pageSlug,
-            'lang' => 'fr',
-            'block_type' => $_POST['block_type'] ?? 'prose',
-            'title' => trim($_POST['title'] ?? 'Nouvelle section'),
-            'content' => '{}',
-            'position' => ($max['mx'] ?? 0) + 1,
-            'active' => 1,
-        ];
+        $position = ($max['mx'] ?? 0) + 1;
+        $blockType = $_POST['block_type'] ?? 'prose';
+        $title = trim($_POST['title'] ?? 'Nouvelle section');
 
-        \BlockService::createSection($data);
-        $this->flash('success', 'Section créée.');
+        // Create section for all supported languages
+        foreach (SUPPORTED_LANGS as $lang) {
+            $data = [
+                'page_slug' => $pageSlug,
+                'lang' => $lang,
+                'block_type' => $blockType,
+                'title' => $title,
+                'content' => '{}',
+                'position' => $position,
+                'active' => 1,
+            ];
+            \BlockService::createSection($data);
+        }
+        $this->flash('success', 'Section créée (FR/EN/ES).');
         $this->redirect('/admin/sections/page/' . $pageSlug);
     }
 

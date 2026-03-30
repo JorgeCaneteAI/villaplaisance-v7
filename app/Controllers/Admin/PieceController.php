@@ -7,11 +7,32 @@ class PieceController extends AdminBaseController
 {
     public function index(): void
     {
-        $pieces = \Database::fetchAll(
-            "SELECT * FROM vp_pieces WHERE lang = 'fr' ORDER BY offer ASC, position ASC"
-        );
+        $langs = SUPPORTED_LANGS;
+
+        // Load pieces for all languages
+        $piecesByLang = [];
+        foreach ($langs as $l) {
+            $piecesByLang[$l] = \Database::fetchAll(
+                "SELECT * FROM vp_pieces WHERE lang = ? ORDER BY offer ASC, position ASC",
+                [$l]
+            );
+        }
+
+        // FR pieces are the reference
+        $pieces = $piecesByLang['fr'] ?? [];
+
+        // Index by lang + offer + position for matching
+        $pieceIndex = [];
+        foreach ($langs as $l) {
+            foreach ($piecesByLang[$l] ?? [] as $p) {
+                $pieceIndex[$l][$p['offer'] . ':' . $p['position']] = $p;
+            }
+        }
+
         $csrf = $this->csrf();
-        $this->render('admin/pieces/index', compact('pieces', 'csrf'));
+        $langLabels = ['fr' => "\u{1F1EB}\u{1F1F7} Français", 'en' => "\u{1F1EC}\u{1F1E7} English", 'es' => "\u{1F1EA}\u{1F1F8} Español"];
+
+        $this->render('admin/pieces/index', compact('pieces', 'piecesByLang', 'pieceIndex', 'langs', 'langLabels', 'csrf'));
     }
 
     public function save(int $id): void
@@ -54,18 +75,22 @@ class PieceController extends AdminBaseController
             return;
         }
 
-        $maxPos = \Database::fetchOne("SELECT MAX(position) as m FROM vp_pieces WHERE lang = 'fr'");
+        $offer = $_POST['offer'] ?? 'bb';
+        $type = $_POST['type'] ?? 'chambre';
+        $maxPos = \Database::fetchOne("SELECT MAX(position) as m FROM vp_pieces WHERE lang = 'fr' AND offer = ?", [$offer]);
         $pos = ($maxPos['m'] ?? 0) + 1;
 
-        \Database::insert('vp_pieces', [
-            'name' => 'Nouvelle chambre',
-            'offer' => $_POST['offer'] ?? 'bb',
-            'type' => $_POST['type'] ?? 'chambre',
-            'position' => $pos,
-            'lang' => 'fr',
-        ]);
+        foreach (SUPPORTED_LANGS as $lang) {
+            \Database::insert('vp_pieces', [
+                'name' => 'Nouvelle chambre',
+                'offer' => $offer,
+                'type' => $type,
+                'position' => $pos,
+                'lang' => $lang,
+            ]);
+        }
 
-        $this->flash('success', 'Chambre/espace ajouté');
+        $this->flash('success', 'Chambre/espace ajouté (FR/EN/ES)');
         $this->redirect('/admin/pieces');
     }
 
@@ -77,8 +102,14 @@ class PieceController extends AdminBaseController
             return;
         }
 
-        \Database::delete('vp_pieces', 'id = ?', [$id]);
-        $this->flash('success', 'Supprimé');
+        $piece = \Database::fetchOne("SELECT * FROM vp_pieces WHERE id = ?", [$id]);
+        if ($piece) {
+            \Database::query(
+                "DELETE FROM vp_pieces WHERE offer = ? AND position = ?",
+                [$piece['offer'], $piece['position']]
+            );
+        }
+        $this->flash('success', 'Supprimé (toutes langues)');
         $this->redirect('/admin/pieces');
     }
 }

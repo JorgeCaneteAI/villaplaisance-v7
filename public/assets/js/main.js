@@ -59,8 +59,11 @@ const VP = {
         const header = document.querySelector('.site-header');
         if (!header) return;
 
-        const hero = document.querySelector('.hero');
-        const threshold = hero ? 100 : 10;
+        const hero = document.querySelector('.hero:not(.hero-compact)');
+        if (!hero) {
+            header.classList.add('scrolled');
+        }
+        const threshold = hero ? 100 : 0;
 
         const update = () => {
             header.classList.toggle('scrolled', window.scrollY > threshold);

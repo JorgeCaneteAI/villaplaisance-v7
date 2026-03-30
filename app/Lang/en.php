@@ -80,4 +80,18 @@ return [
     'category' => 'Category',
     'share' => 'Share',
     'minutes_read' => ':min min read',
+
+    // Guest booklet
+    'livret.title' => 'Welcome Booklet',
+    'livret.password_prompt' => 'Enter your access code',
+    'livret.password_error' => 'Incorrect code',
+    'livret.password_submit' => 'Access',
+    'livret.type_bb' => 'Bed & Breakfast',
+    'livret.type_villa' => 'Entire Villa',
+    'livret.message_title' => 'Any questions?',
+    'livret.message_success' => 'Message sent, thank you!',
+    'livret.message_name' => 'Your name',
+    'livret.message_email' => 'Your email',
+    'livret.message_body' => 'Your message',
+    'livret.message_send' => 'Send',
 ];

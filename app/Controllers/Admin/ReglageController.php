@@ -27,16 +27,36 @@ class ReglageController extends AdminBaseController
             $socials = \Database::fetchAll("SELECT * FROM vp_social_links ORDER BY position ASC");
         } catch (\Throwable) {}
 
-        $amenities = [];
+        $langs = SUPPORTED_LANGS;
+        $langLabels = ['fr' => "\u{1F1EB}\u{1F1F7} Français", 'en' => "\u{1F1EC}\u{1F1E7} English", 'es' => "\u{1F1EA}\u{1F1F8} Español"];
+
+        // Amenities per language
+        $amenitiesByLang = [];
         try {
-            $rows = \Database::fetchAll("SELECT * FROM vp_amenities ORDER BY category, position ASC");
-            foreach ($rows as $row) {
-                $amenities[$row['category']][] = $row;
+            foreach ($langs as $l) {
+                $rows = \Database::fetchAll("SELECT * FROM vp_amenities WHERE lang = ? ORDER BY category, position ASC", [$l]);
+                $grouped = [];
+                foreach ($rows as $row) {
+                    $grouped[$row['category']][] = $row;
+                }
+                $amenitiesByLang[$l] = $grouped;
             }
         } catch (\Throwable) {}
 
+        // FR amenities is the reference (for shared fields like offer_bb, offer_villa)
+        $amenities = $amenitiesByLang['fr'] ?? [];
+
+        // Index by lang + category + position
+        $amenityIndex = [];
+        foreach ($langs as $l) {
+            $allForLang = \Database::fetchAll("SELECT * FROM vp_amenities WHERE lang = ? ORDER BY category, position", [$l]);
+            foreach ($allForLang as $a) {
+                $amenityIndex[$l][$a['category'] . ':' . $a['position']] = $a;
+            }
+        }
+
         $csrf = $this->csrf();
-        $this->render('admin/reglages/index', compact('settings', 'bookingBB', 'bookingVilla', 'socials', 'amenities', 'csrf'));
+        $this->render('admin/reglages/index', compact('settings', 'bookingBB', 'bookingVilla', 'socials', 'amenities', 'amenitiesByLang', 'amenityIndex', 'langs', 'langLabels', 'csrf'));
     }
 
     public function save(): void
@@ -211,17 +231,22 @@ class ReglageController extends AdminBaseController
             return;
         }
 
-        $max = \Database::fetchOne("SELECT MAX(position) as mx FROM vp_amenities WHERE category = ?", [$category]);
-        \Database::insert('vp_amenities', [
-            'category' => $category,
-            'name' => $name,
-            'description' => $description,
-            'offer_bb' => isset($_POST['offer_bb']) ? 1 : 0,
-            'offer_villa' => isset($_POST['offer_villa']) ? 1 : 0,
-            'position' => ($max['mx'] ?? 0) + 1,
-        ]);
+        $max = \Database::fetchOne("SELECT MAX(position) as mx FROM vp_amenities WHERE category = ? AND lang = 'fr'", [$category]);
+        $pos = ($max['mx'] ?? 0) + 1;
 
-        $this->flash('success', "Équipement « {$name} » ajouté.");
+        foreach (SUPPORTED_LANGS as $lang) {
+            \Database::insert('vp_amenities', [
+                'category' => $category,
+                'name' => $lang === 'fr' ? $name : '',
+                'description' => $lang === 'fr' ? $description : '',
+                'offer_bb' => isset($_POST['offer_bb']) ? 1 : 0,
+                'offer_villa' => isset($_POST['offer_villa']) ? 1 : 0,
+                'position' => $pos,
+                'lang' => $lang,
+            ]);
+        }
+
+        $this->flash('success', "Équipement « {$name} » ajouté (FR/EN/ES).");
         $this->redirect('/admin/reglages');
     }
 
@@ -275,8 +300,11 @@ class ReglageController extends AdminBaseController
             return;
         }
 
-        \Database::delete('vp_amenities', 'id = ?', [$id]);
-        $this->flash('success', 'Équipement supprimé.');
+        $item = \Database::fetchOne("SELECT * FROM vp_amenities WHERE id = ?", [$id]);
+        if ($item) {
+            \Database::query("DELETE FROM vp_amenities WHERE category = ? AND position = ?", [$item['category'], $item['position']]);
+        }
+        $this->flash('success', 'Équipement supprimé (toutes langues).');
         $this->redirect('/admin/reglages');
     }
 }

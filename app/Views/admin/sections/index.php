@@ -7,67 +7,48 @@
 <p class="text-muted">Sélectionnez une page depuis la liste des pages CMS.</p>
 <?php else: ?>
 
-<?php if (empty($sections)): ?>
-<p class="text-muted mb-2">Aucune section pour cette page.</p>
-<?php else: ?>
-
 <?php
+$langLabels = ['fr' => '🇫🇷 Français', 'en' => '🇬🇧 English', 'es' => '🇪🇸 Español'];
+
 // Field definitions per block type
 $fieldDefs = [
     'hero' => [
         ['name' => 'title', 'label' => 'Titre (H1)', 'type' => 'text'],
         ['name' => 'subtitle', 'label' => 'Sous-titre', 'type' => 'text'],
-        ['name' => 'cta_text', 'label' => 'Texte du bouton', 'type' => 'text'],
-        ['name' => 'cta_url', 'label' => 'URL du bouton', 'type' => 'text'],
-        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
-        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
-        ['name' => 'compact', 'label' => 'Mode compact (sans image)', 'type' => 'checkbox'],
+        ['name' => 'buttons', 'label' => 'Boutons (JSON)', 'type' => 'buttons'],
     ],
     'prose' => [
         ['name' => 'heading', 'label' => 'Titre (H2)', 'type' => 'text'],
         ['name' => 'text', 'label' => 'Texte', 'type' => 'textarea'],
-        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
-        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
-        ['name' => 'lead', 'label' => 'Style lead (texte plus grand)', 'type' => 'checkbox'],
     ],
     'cta' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
         ['name' => 'text', 'label' => 'Texte', 'type' => 'textarea'],
-        ['name' => 'button_text', 'label' => 'Texte du bouton', 'type' => 'text'],
-        ['name' => 'button_url', 'label' => 'URL du bouton', 'type' => 'text'],
-        ['name' => 'dark', 'label' => 'Fond sombre', 'type' => 'checkbox'],
+        ['name' => 'buttons', 'label' => 'Boutons (JSON)', 'type' => 'buttons'],
     ],
     'cartes' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'offer', 'label' => 'Offre', 'type' => 'select', 'options' => ['bb' => 'Chambres d\'hôtes', 'villa' => 'Villa entière']],
     ],
     'faq' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'page_slug', 'label' => 'Page source des FAQ', 'type' => 'text'],
     ],
     'avis' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'limit', 'label' => 'Nombre d\'avis', 'type' => 'number'],
-        ['name' => 'offer_filter', 'label' => 'Filtrer par offre (bb/villa, vide = tous)', 'type' => 'text'],
     ],
     'stats' => [
-        ['name' => '_info', 'label' => 'Les chiffres sont gérés dans la table vp_stats (pas de contenu JSON ici).', 'type' => 'info'],
+        ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
     ],
     'territoire' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
     ],
     'galerie' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'images', 'label' => 'Images (JSON)', 'type' => 'json'],
     ],
     'articles' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'type', 'label' => 'Type', 'type' => 'select', 'options' => ['journal' => 'Journal', 'surplace' => 'Sur place']],
-        ['name' => 'limit', 'label' => 'Nombre d\'articles', 'type' => 'number'],
     ],
     'liste' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
-        ['name' => 'style', 'label' => 'Style', 'type' => 'select', 'options' => ['check' => 'Check ✓', 'bullet' => 'Puces', 'none' => 'Sans']],
         ['name' => 'items', 'label' => 'Items (JSON)', 'type' => 'json'],
     ],
     'tableau' => [
@@ -77,257 +58,533 @@ $fieldDefs = [
     'petit-dejeuner' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
         ['name' => 'text', 'label' => 'Texte', 'type' => 'textarea'],
-        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
-        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
     ],
     'piscine' => [
         ['name' => 'heading', 'label' => 'Titre', 'type' => 'text'],
         ['name' => 'text', 'label' => 'Texte', 'type' => 'textarea'],
-        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
-        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
     ],
 ];
+
+// Shared fields (not translatable) per block type
+$sharedFieldDefs = [
+    'hero' => [
+        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
+        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
+        ['name' => 'compact', 'label' => 'Mode compact', 'type' => 'checkbox'],
+    ],
+    'prose' => [
+        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
+        ['name' => 'image_alt', 'label' => 'Alt image', 'type' => 'text'],
+        ['name' => 'lead', 'label' => 'Style lead', 'type' => 'checkbox'],
+    ],
+    'cta' => [
+        ['name' => 'dark', 'label' => 'Fond sombre', 'type' => 'checkbox'],
+    ],
+    'cartes' => [
+        ['name' => 'offer', 'label' => 'Offre', 'type' => 'select', 'options' => ['bb' => 'B&B', 'villa' => 'Villa']],
+    ],
+    'faq' => [
+        ['name' => 'page_slug', 'label' => 'Page source FAQ', 'type' => 'text'],
+    ],
+    'avis' => [
+        ['name' => 'limit', 'label' => 'Nombre', 'type' => 'number'],
+        ['name' => 'offer_filter', 'label' => 'Filtre offre', 'type' => 'text'],
+    ],
+    'articles' => [
+        ['name' => 'type', 'label' => 'Type', 'type' => 'select', 'options' => ['journal' => 'Journal', 'surplace' => 'Sur place']],
+        ['name' => 'limit', 'label' => 'Nombre', 'type' => 'number'],
+    ],
+    'galerie' => [
+        ['name' => 'images', 'label' => 'Images (JSON)', 'type' => 'json'],
+    ],
+    'liste' => [
+        ['name' => 'style', 'label' => 'Style', 'type' => 'select', 'options' => ['check' => 'Check', 'bullet' => 'Puces', 'none' => 'Sans']],
+    ],
+    'petit-dejeuner' => [
+        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
+        ['name' => 'image_alt', 'label' => 'Alt', 'type' => 'text'],
+    ],
+    'piscine' => [
+        ['name' => 'image', 'label' => 'Image', 'type' => 'image'],
+        ['name' => 'image_alt', 'label' => 'Alt', 'type' => 'text'],
+    ],
+];
+
+// Index EN/ES sections by position to match FR sections
+$sectionIndex = [];
+foreach ($langs as $l) {
+    foreach ($sectionsByLang[$l] ?? [] as $s) {
+        $sectionIndex[$l][$s['position']] = $s;
+    }
+}
 ?>
 
-<?php foreach ($sections as $i => $s):
-    $content = json_decode($s['content'] ?? '{}', true) ?: [];
-    $type = $s['block_type'];
-    $fields = $fieldDefs[$type] ?? [];
-    $isInactive = !$s['active'];
+<?php if (empty($sections)): ?>
+<p class="text-muted mb-2">Aucune section pour cette page.</p>
+<?php else: ?>
+
+<?php foreach ($sections as $frSection):
+    $type = $frSection['block_type'];
+    $pos = $frSection['position'];
+    $transFields = $fieldDefs[$type] ?? [];
+    $shared = $sharedFieldDefs[$type] ?? [];
+    $frContent = json_decode($frSection['content'] ?? '{}', true) ?: [];
+    $isInactive = !$frSection['active'];
 ?>
-<div class="section-card<?= $isInactive ? ' section-card-inactive' : '' ?>">
-    <!-- Header -->
-    <div class="section-card-header">
-        <div class="section-card-info">
-            <span class="section-position"><?= $s['position'] ?></span>
+<div class="block-row">
+    <!-- Block header (shared controls) -->
+    <div class="block-row-header">
+        <div class="block-row-info">
+            <span class="section-position"><?= $pos ?></span>
             <span class="badge badge-info"><?= htmlspecialchars($type) ?></span>
-            <strong class="section-title"><?= htmlspecialchars($s['title'] ?? '(sans titre)') ?></strong>
-            <?php if ($isInactive): ?>
-            <span class="badge badge-warning">Masqué</span>
-            <?php endif; ?>
+            <strong><?= htmlspecialchars($frSection['title'] ?? '(sans titre)') ?></strong>
+            <?php if ($isInactive): ?><span class="badge badge-warning">Masqué</span><?php endif; ?>
         </div>
-        <div class="section-card-actions">
-            <form method="POST" action="/admin/sections/<?= $s['id'] ?>/toggle" style="display:inline">
+        <div class="block-row-actions">
+            <form method="POST" action="/admin/sections/<?= $frSection['id'] ?>/toggle" style="display:inline">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <button type="submit" class="btn btn-sm" title="<?= $s['active'] ? 'Masquer' : 'Activer' ?>">
-                    <?= $s['active'] ? '👁 Masquer' : '👁‍🗨 Activer' ?>
-                </button>
+                <button type="submit" class="btn btn-sm"><?= $frSection['active'] ? '👁 Masquer' : '👁‍🗨 Activer' ?></button>
             </form>
-            <form method="POST" action="/admin/sections/<?= $s['id'] ?>/move/up" style="display:inline">
+            <form method="POST" action="/admin/sections/<?= $frSection['id'] ?>/move/up" style="display:inline">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <button type="submit" class="btn btn-sm" title="Monter">↑</button>
+                <button type="submit" class="btn btn-sm">↑</button>
             </form>
-            <form method="POST" action="/admin/sections/<?= $s['id'] ?>/move/down" style="display:inline">
+            <form method="POST" action="/admin/sections/<?= $frSection['id'] ?>/move/down" style="display:inline">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <button type="submit" class="btn btn-sm" title="Descendre">↓</button>
+                <button type="submit" class="btn btn-sm">↓</button>
             </form>
-            <form method="POST" action="/admin/sections/<?= $s['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cette section ?')">
+            <form method="POST" action="/admin/sections/<?= $frSection['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cette section (toutes langues) ?')">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">✕ Suppr.</button>
+                <button type="submit" class="btn btn-sm btn-danger">✕</button>
             </form>
         </div>
     </div>
 
-    <!-- Content form -->
-    <form method="POST" action="/admin/sections/<?= $s['id'] ?>/save" class="section-card-body">
-        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-        <input type="hidden" name="block_type" value="<?= htmlspecialchars($type) ?>">
-
-        <div class="section-fields">
-            <!-- Section title -->
-            <div class="form-group form-group-inline">
-                <label for="title-<?= $s['id'] ?>">Titre de la section</label>
-                <input type="text" id="title-<?= $s['id'] ?>" name="title" value="<?= htmlspecialchars($s['title'] ?? '') ?>">
+    <!-- 3-column language grid -->
+    <?php if (!empty($transFields)): ?>
+    <div class="lang-columns">
+        <?php foreach ($langs as $l):
+            $s = $sectionIndex[$l][$pos] ?? null;
+            $content = $s ? (json_decode($s['content'] ?? '{}', true) ?: []) : [];
+        ?>
+        <div class="lang-column">
+            <div class="lang-column-header">
+                <span><?= $langLabels[$l] ?? strtoupper($l) ?></span>
+                <?php if (!$s): ?><span class="badge badge-warning">manquant</span><?php endif; ?>
             </div>
-
-            <?php
-            // Separate checkbox fields from other fields
-            $checkboxFields = [];
-            $otherFields = [];
-            if (!empty($fields)) {
-                foreach ($fields as $field) {
-                    if ($field['type'] === 'checkbox') {
-                        $checkboxFields[] = $field;
-                    } else {
-                        $otherFields[] = $field;
+            <?php if ($s): ?>
+            <form method="POST" action="/admin/sections/<?= $s['id'] ?>/save" class="lang-column-body">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                <input type="hidden" name="block_type" value="<?= htmlspecialchars($type) ?>">
+                <input type="hidden" name="title" value="<?= htmlspecialchars($s['title'] ?? '') ?>">
+                <?php // Copy shared fields from FR content into hidden inputs for non-FR langs
+                if ($l !== 'fr') {
+                    foreach ($shared as $sf) {
+                        $sfVal = $frContent[$sf['name']] ?? '';
+                        if (is_array($sfVal)) $sfVal = json_encode($sfVal);
+                        echo '<input type="hidden" name="fields[' . htmlspecialchars($sf['name']) . ']" value="' . htmlspecialchars((string)$sfVal) . '">';
                     }
                 }
-            }
-            ?>
-
-            <?php if (empty($fields)): ?>
-            <!-- Fallback: raw JSON editor -->
-            <div class="form-group">
-                <label for="content-raw-<?= $s['id'] ?>">Contenu (JSON)</label>
-                <textarea id="content-raw-<?= $s['id'] ?>" name="content" rows="6" class="code-textarea"><?= htmlspecialchars($s['content'] ?? '{}') ?></textarea>
-            </div>
-            <?php else: ?>
-            <!-- Typed fields (non-checkbox) -->
-            <?php foreach ($otherFields as $field):
-                $val = $content[$field['name']] ?? '';
-            ?>
-                <?php if ($field['type'] === 'info'): ?>
-                <div class="form-group">
-                    <p class="field-info"><?= $field['label'] ?></p>
-                </div>
-
-                <?php elseif ($field['type'] === 'image'):
-                    // Support multi-image: value can be a JSON array string or a single filename
-                    $imgArr = [];
-                    if (is_array($val)) {
-                        $imgArr = $val;
-                    } elseif (is_string($val) && str_starts_with(trim($val), '[')) {
-                        $imgArr = json_decode($val, true) ?: [];
-                    } elseif (!empty($val)) {
-                        $imgArr = [(string)$val];
-                    }
-                    $fieldUid = 'simgs-' . $s['id'] . '-' . $field['name'];
                 ?>
-                <div class="form-group form-group-image">
-                    <label><?= $field['label'] ?></label>
-                    <div class="piece-images-grid" id="<?= $fieldUid ?>-grid">
-                        <?php foreach ($imgArr as $img): ?>
-                        <div class="piece-img-thumb" data-file="<?= htmlspecialchars($img) ?>">
-                            <img src="/uploads/<?= htmlspecialchars($img) ?>" alt="" loading="lazy">
-                            <button type="button" class="piece-img-remove" title="Retirer">&times;</button>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-add-section-image" data-grid-id="<?= $fieldUid ?>-grid" data-hidden-id="<?= $fieldUid ?>">+ Ajouter photo</button>
-                    <input type="hidden" name="fields[<?= $field['name'] ?>]" id="<?= $fieldUid ?>" value="<?= htmlspecialchars(json_encode($imgArr)) ?>">
-                </div>
-
-                <?php elseif ($field['type'] === 'text'): ?>
-                <div class="form-group form-group-inline">
-                    <label for="f-<?= $s['id'] ?>-<?= $field['name'] ?>"><?= $field['label'] ?></label>
-                    <input type="text" id="f-<?= $s['id'] ?>-<?= $field['name'] ?>" name="fields[<?= $field['name'] ?>]" value="<?= htmlspecialchars((string)$val) ?>">
-                </div>
-
-                <?php elseif ($field['type'] === 'number'): ?>
-                <div class="form-group form-group-inline">
-                    <label for="f-<?= $s['id'] ?>-<?= $field['name'] ?>"><?= $field['label'] ?></label>
-                    <input type="number" id="f-<?= $s['id'] ?>-<?= $field['name'] ?>" name="fields[<?= $field['name'] ?>]" value="<?= htmlspecialchars((string)$val) ?>" min="1" max="50">
-                </div>
-
-                <?php elseif ($field['type'] === 'textarea'): ?>
-                <div class="form-group">
-                    <label for="f-<?= $s['id'] ?>-<?= $field['name'] ?>"><?= $field['label'] ?></label>
-                    <textarea id="f-<?= $s['id'] ?>-<?= $field['name'] ?>" name="fields[<?= $field['name'] ?>]" rows="4"><?= htmlspecialchars((string)$val) ?></textarea>
-                </div>
-
-                <?php elseif ($field['type'] === 'select'): ?>
-                <div class="form-group form-group-inline">
-                    <label for="f-<?= $s['id'] ?>-<?= $field['name'] ?>"><?= $field['label'] ?></label>
-                    <select id="f-<?= $s['id'] ?>-<?= $field['name'] ?>" name="fields[<?= $field['name'] ?>]">
-                        <?php foreach ($field['options'] as $optVal => $optLabel): ?>
-                        <option value="<?= htmlspecialchars($optVal) ?>" <?= (string)$val === (string)$optVal ? 'selected' : '' ?>><?= htmlspecialchars($optLabel) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <?php elseif ($field['type'] === 'json'): ?>
-                <div class="form-group">
-                    <label for="f-<?= $s['id'] ?>-<?= $field['name'] ?>"><?= $field['label'] ?></label>
-                    <textarea id="f-<?= $s['id'] ?>-<?= $field['name'] ?>" name="fields[<?= $field['name'] ?>]" rows="4" class="code-textarea"><?= htmlspecialchars(is_array($val) ? json_encode($val, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : (string)$val) ?></textarea>
-                </div>
-
-                <?php endif; ?>
-            <?php endforeach; ?>
-            <?php endif; ?>
-
-            <!-- Checkboxes grouped on one line -->
-            <div class="section-checks">
-                <?php foreach ($checkboxFields as $field):
+                <?php foreach ($transFields as $field):
                     $val = $content[$field['name']] ?? '';
                 ?>
-                <div class="form-group-check">
-                    <label>
-                        <input type="hidden" name="fields[<?= $field['name'] ?>]" value="0">
-                        <input type="checkbox" name="fields[<?= $field['name'] ?>]" value="1" <?= !empty($val) ? 'checked' : '' ?>>
-                        <?= $field['label'] ?>
-                    </label>
-                </div>
-                <?php endforeach; ?>
-                <div class="form-group-check">
-                    <label>
-                        <input type="checkbox" name="active" <?= $s['active'] ? 'checked' : '' ?>>
-                        Section active
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <div class="section-card-footer">
-            <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
-        </div>
-    </form>
-
-    <?php if ($type === 'cartes'):
-        $offerFilter = $content['offer'] ?? 'bb';
-        $filteredPieces = array_filter($pieces ?? [], fn($p) => $p['offer'] === $offerFilter);
-    ?>
-    <?php if (!empty($filteredPieces)): ?>
-    <div class="pieces-inline">
-        <div class="pieces-inline-header">
-            <strong>Fiches <?= $offerFilter === 'bb' ? 'chambres d\'hôtes' : 'villa' ?></strong>
-            <a href="/admin/pieces" class="btn btn-sm">Gérer les fiches →</a>
-        </div>
-        <?php foreach ($filteredPieces as $p):
-            $imgList = json_decode($p['images'] ?? '[]', true) ?: [];
-            // Fallback: if images empty but image set, use it
-            if (empty($imgList) && !empty($p['image'])) $imgList = [$p['image']];
-        ?>
-        <form method="POST" action="/admin/pieces/<?= $p['id'] ?>/save" class="piece-inline-card">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-            <input type="hidden" name="offer" value="<?= htmlspecialchars($p['offer']) ?>">
-            <input type="hidden" name="type" value="<?= htmlspecialchars($p['type']) ?>">
-            <input type="hidden" name="image" value="<?= htmlspecialchars($imgList[0] ?? $p['image'] ?? '') ?>">
-            <div class="piece-inline-row">
-                <div class="piece-inline-images-col">
-                    <label style="font-size:0.7rem;font-weight:500;margin-bottom:0.3rem;display:block">Photos</label>
-                    <div class="piece-images-grid" id="pimgs-grid-<?= $p['id'] ?>">
-                        <?php foreach ($imgList as $img): ?>
-                        <div class="piece-img-thumb" data-file="<?= htmlspecialchars($img) ?>">
-                            <img src="/uploads/<?= htmlspecialchars($img) ?>" alt="" loading="lazy">
-                            <button type="button" class="piece-img-remove" title="Retirer">&times;</button>
-                        </div>
-                        <?php endforeach; ?>
+                    <?php if ($field['type'] === 'text'): ?>
+                    <div class="form-group">
+                        <label><?= $field['label'] ?></label>
+                        <input type="text" name="fields[<?= $field['name'] ?>]" value="<?= htmlspecialchars((string)$val) ?>">
                     </div>
-                    <button type="button" class="btn btn-sm btn-add-piece-image" data-piece-id="<?= $p['id'] ?>">+ Ajouter photo</button>
-                    <input type="hidden" name="images" id="pimgs-<?= $p['id'] ?>" value="<?= htmlspecialchars(json_encode($imgList)) ?>">
+                    <?php elseif ($field['type'] === 'textarea'): ?>
+                    <div class="form-group">
+                        <label><?= $field['label'] ?></label>
+                        <textarea name="fields[<?= $field['name'] ?>]" rows="3"><?= htmlspecialchars((string)$val) ?></textarea>
+                    </div>
+                    <?php elseif ($field['type'] === 'json'): ?>
+                    <div class="form-group">
+                        <label><?= $field['label'] ?></label>
+                        <textarea name="fields[<?= $field['name'] ?>]" rows="3" class="code-textarea"><?= htmlspecialchars(is_array($val) ? json_encode($val, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : (string)$val) ?></textarea>
+                    </div>
+                    <?php elseif ($field['type'] === 'buttons'): ?>
+                    <?php
+                    // Parse buttons — support legacy single cta_text/cta_url or button_text/button_url
+                    $btns = [];
+                    if (is_array($val)) {
+                        $btns = $val;
+                    } elseif (is_string($val) && str_starts_with(trim($val), '[')) {
+                        $btns = json_decode($val, true) ?: [];
+                    }
+                    // Legacy fallback: migrate from old single-button fields
+                    if (empty($btns)) {
+                        if (!empty($content['cta_text'])) {
+                            $btns[] = ['text' => $content['cta_text'], 'url' => $content['cta_url'] ?? '', 'style' => 'primary'];
+                        }
+                        if (!empty($content['button_text'])) {
+                            $btns[] = ['text' => $content['button_text'], 'url' => $content['button_url'] ?? $frContent['button_url'] ?? '', 'style' => 'primary'];
+                        }
+                    }
+                    if (empty($btns)) $btns[] = ['text' => '', 'url' => '', 'style' => 'primary'];
+                    $sectionId = $s['id'];
+                    ?>
+                    <div class="form-group buttons-editor" data-section="<?= $sectionId ?>">
+                        <label>Boutons</label>
+                        <div class="buttons-list">
+                        <?php foreach ($btns as $bi => $btn): ?>
+                            <div class="button-row" data-index="<?= $bi ?>">
+                                <input type="text" placeholder="Texte" value="<?= htmlspecialchars($btn['text'] ?? '') ?>" class="btn-text" style="flex:1">
+                                <input type="text" placeholder="URL" value="<?= htmlspecialchars($btn['url'] ?? '') ?>" class="btn-url" style="flex:1">
+                                <select class="btn-style" style="width:auto">
+                                    <option value="primary" <?= ($btn['style'] ?? '') === 'primary' ? 'selected' : '' ?>>Principal</option>
+                                    <option value="outline" <?= ($btn['style'] ?? '') === 'outline' ? 'selected' : '' ?>>Outline</option>
+                                    <option value="external" <?= ($btn['style'] ?? '') === 'external' ? 'selected' : '' ?>>Externe ↗</option>
+                                </select>
+                                <button type="button" class="btn btn-sm btn-danger btn-remove-row" style="padding:0 0.4rem">&times;</button>
+                            </div>
+                        <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-add-button" style="margin-top:0.25rem;font-size:0.7rem">+ Bouton</button>
+                        <input type="hidden" name="fields[<?= $field['name'] ?>]" class="buttons-json" value="<?= htmlspecialchars(json_encode($btns, JSON_UNESCAPED_UNICODE)) ?>">
+                    </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+                <?php // Show shared fields only in FR column
+                if ($l === 'fr' && !empty($shared)): ?>
+                <hr style="margin:0.5rem 0;border:none;border-top:1px solid #e2e8f0">
+                <p style="font-size:0.65rem;color:#999;margin-bottom:0.25rem">Paramètres partagés</p>
+                <?php foreach ($shared as $sf):
+                    $sfVal = $frContent[$sf['name']] ?? '';
+                ?>
+                    <?php if ($sf['type'] === 'text'): ?>
+                    <div class="form-group">
+                        <label><?= $sf['label'] ?></label>
+                        <input type="text" name="fields[<?= $sf['name'] ?>]" value="<?= htmlspecialchars((string)$sfVal) ?>">
+                    </div>
+                    <?php elseif ($sf['type'] === 'number'): ?>
+                    <div class="form-group">
+                        <label><?= $sf['label'] ?></label>
+                        <input type="number" name="fields[<?= $sf['name'] ?>]" value="<?= htmlspecialchars((string)$sfVal) ?>" min="1" max="50">
+                    </div>
+                    <?php elseif ($sf['type'] === 'select'): ?>
+                    <div class="form-group">
+                        <label><?= $sf['label'] ?></label>
+                        <select name="fields[<?= $sf['name'] ?>]">
+                            <?php foreach ($sf['options'] as $optVal => $optLabel): ?>
+                            <option value="<?= htmlspecialchars($optVal) ?>" <?= (string)$sfVal === (string)$optVal ? 'selected' : '' ?>><?= htmlspecialchars($optLabel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php elseif ($sf['type'] === 'checkbox'): ?>
+                    <div class="form-group">
+                        <label><input type="hidden" name="fields[<?= $sf['name'] ?>]" value="0"><input type="checkbox" name="fields[<?= $sf['name'] ?>]" value="1" <?= !empty($sfVal) ? 'checked' : '' ?>> <?= $sf['label'] ?></label>
+                    </div>
+                    <?php elseif ($sf['type'] === 'image'): ?>
+                    <div class="form-group section-image-picker" data-section="<?= $s['id'] ?>">
+                        <label><?= $sf['label'] ?></label>
+                        <div style="display:flex;gap:0.5rem;align-items:center">
+                            <input type="text" name="fields[<?= $sf['name'] ?>]" value="<?= htmlspecialchars((string)$sfVal) ?>" class="section-image-input" style="flex:1;font-size:0.75rem" placeholder="fichier.webp">
+                            <button type="button" class="btn btn-sm btn-pick-image">Choisir</button>
+                        </div>
+                        <?php if (!empty($sfVal)): ?>
+                        <div style="margin-top:0.3rem">
+                            <img src="/uploads/<?= htmlspecialchars((string)$sfVal) ?>" alt="" style="max-width:120px;max-height:80px;border-radius:4px;border:1px solid #e2e8f0" loading="lazy">
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php elseif ($sf['type'] === 'json'): ?>
+                    <div class="form-group">
+                        <label><?= $sf['label'] ?></label>
+                        <textarea name="fields[<?= $sf['name'] ?>]" rows="3" class="code-textarea"><?= htmlspecialchars(is_array($sfVal) ? json_encode($sfVal, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : (string)$sfVal) ?></textarea>
+                    </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <?php endif; ?>
+
+                <input type="hidden" name="active" value="<?= $s['active'] ? '1' : '' ?>">
+                <button type="submit" class="btn btn-primary btn-sm mt-1">Enregistrer</button>
+            </form>
+            <?php else: ?>
+            <div class="lang-column-body">
+                <p class="lang-missing">Pas encore de version <?= strtoupper($l) ?></p>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+    <?php // Inline FAQ items for faq blocks
+    if ($type === 'faq'):
+        $faqPageSlug = $frContent['page_slug'] ?? $page_slug;
+    ?>
+    <div class="block-inline-detail">
+        <div class="block-inline-detail-header">
+            <strong>Questions / Réponses</strong>
+            <form method="POST" action="/admin/faq/create" style="display:inline">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                <input type="hidden" name="page_slug" value="<?= htmlspecialchars($faqPageSlug) ?>">
+                <button type="submit" class="btn btn-sm btn-primary">+ Ajouter FAQ</button>
+            </form>
+        </div>
+        <?php
+        // Get max positions across all langs for this page_slug
+        $faqPositions = [];
+        foreach ($langs as $fl) {
+            foreach ($faqBySlugLang[$faqPageSlug][$fl] ?? [] as $fItem) {
+                $faqPositions[$fItem['position']] = true;
+            }
+        }
+        ksort($faqPositions);
+        // Index FAQ by lang+position
+        $faqIndex = [];
+        foreach ($langs as $fl) {
+            foreach ($faqBySlugLang[$faqPageSlug][$fl] ?? [] as $fItem) {
+                $faqIndex[$fl][$fItem['position']] = $fItem;
+            }
+        }
+        ?>
+        <?php foreach (array_keys($faqPositions) as $fPos): ?>
+        <div class="lang-columns faq-row">
+            <?php foreach ($langs as $fl):
+                $fItem = $faqIndex[$fl][$fPos] ?? null;
+            ?>
+            <div class="lang-column">
+                <?php if ($fl === 'fr'): ?>
+                <div class="lang-column-header" style="padding:0.25rem 0.5rem">
+                    <span>Q<?= $fPos ?></span>
+                    <form method="POST" action="/admin/faq/<?= $fItem['id'] ?? 0 ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cette FAQ (toutes langues) ?')">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0 0.4rem;font-size:0.65rem">✕</button>
+                    </form>
                 </div>
-                <div class="piece-inline-fields">
-                    <div class="piece-field-row">
-                        <div class="form-group form-group-inline">
-                            <label for="pname-<?= $p['id'] ?>">Nom</label>
-                            <input type="text" id="pname-<?= $p['id'] ?>" name="name" value="<?= htmlspecialchars($p['name']) ?>">
-                        </div>
-                        <div class="form-group form-group-inline">
-                            <label for="psub-<?= $p['id'] ?>">Sous-titre</label>
-                            <input type="text" id="psub-<?= $p['id'] ?>" name="sous_titre" value="<?= htmlspecialchars($p['sous_titre'] ?? '') ?>">
-                        </div>
+                <?php endif; ?>
+                <?php if ($fItem): ?>
+                <form method="POST" action="/admin/faq/<?= $fItem['id'] ?>/save" class="lang-column-body" style="padding:0.5rem">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Question</label>
+                        <input type="text" name="question" value="<?= htmlspecialchars($fItem['question'] ?? '') ?>" style="font-size:0.75rem">
                     </div>
                     <div class="form-group">
-                        <label for="pdesc-<?= $p['id'] ?>">Description</label>
-                        <textarea id="pdesc-<?= $p['id'] ?>" name="description" rows="2"><?= htmlspecialchars($p['description'] ?? '') ?></textarea>
+                        <label style="font-size:0.65rem">Réponse</label>
+                        <textarea name="answer" rows="2" style="font-size:0.75rem"><?= htmlspecialchars($fItem['answer'] ?? '') ?></textarea>
                     </div>
-                    <div class="piece-field-row">
-                        <div class="form-group form-group-inline">
-                            <label for="pequip-<?= $p['id'] ?>">Équipements (virgules)</label>
-                            <input type="text" id="pequip-<?= $p['id'] ?>" name="equip" value="<?= htmlspecialchars($p['equip'] ?? '') ?>">
-                        </div>
-                        <div class="form-group form-group-inline">
-                            <label for="pnote-<?= $p['id'] ?>">Note</label>
-                            <input type="text" id="pnote-<?= $p['id'] ?>" name="note" value="<?= htmlspecialchars($p['note'] ?? '') ?>">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem">Sauver</button>
+                </form>
+                <?php else: ?>
+                <div class="lang-column-body" style="padding:0.5rem">
+                    <p class="lang-missing" style="font-size:0.7rem">—</p>
                 </div>
+                <?php endif; ?>
             </div>
-        </form>
+            <?php endforeach; ?>
+        </div>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
+
+    <?php // Inline Stats items for stats blocks
+    if ($type === 'stats'):
+    ?>
+    <div class="block-inline-detail">
+        <div class="block-inline-detail-header">
+            <strong>Chiffres</strong>
+            <form method="POST" action="/admin/stats/create" style="display:inline">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                <button type="submit" class="btn btn-sm btn-primary">+ Ajouter stat</button>
+            </form>
+        </div>
+        <?php
+        $statPositions = [];
+        foreach ($langs as $sl) {
+            foreach ($statsByLang[$sl] ?? [] as $sItem) {
+                $statPositions[$sItem['position']] = true;
+            }
+        }
+        ksort($statPositions);
+        $statIndex = [];
+        foreach ($langs as $sl) {
+            foreach ($statsByLang[$sl] ?? [] as $sItem) {
+                $statIndex[$sl][$sItem['position']] = $sItem;
+            }
+        }
+        ?>
+        <?php foreach (array_keys($statPositions) as $sPos): ?>
+        <div class="lang-columns stat-row">
+            <?php foreach ($langs as $sl):
+                $sItem = $statIndex[$sl][$sPos] ?? null;
+            ?>
+            <div class="lang-column">
+                <?php if ($sl === 'fr'): ?>
+                <div class="lang-column-header" style="padding:0.25rem 0.5rem">
+                    <span>#<?= $sPos ?></span>
+                    <form method="POST" action="/admin/stats/<?= $sItem['id'] ?? 0 ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cette stat (toutes langues) ?')">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0 0.4rem;font-size:0.65rem">✕</button>
+                    </form>
+                </div>
+                <?php endif; ?>
+                <?php if ($sItem): ?>
+                <form method="POST" action="/admin/stats/<?= $sItem['id'] ?>/save" class="lang-column-body" style="padding:0.5rem">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Valeur</label>
+                        <input type="text" name="value" value="<?= htmlspecialchars($sItem['value'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Label</label>
+                        <input type="text" name="label" value="<?= htmlspecialchars($sItem['label'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Sous-label</label>
+                        <input type="text" name="sublabel" value="<?= htmlspecialchars($sItem['sublabel'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem">Sauver</button>
+                </form>
+                <?php else: ?>
+                <div class="lang-column-body" style="padding:0.5rem">
+                    <p class="lang-missing" style="font-size:0.7rem">—</p>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php // Inline Proximites for territoire blocks
+    if ($type === 'territoire'):
+    ?>
+    <div class="block-inline-detail">
+        <div class="block-inline-detail-header">
+            <strong>Proximités</strong>
+            <form method="POST" action="/admin/proximites/create" style="display:inline">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                <button type="submit" class="btn btn-sm btn-primary">+ Ajouter</button>
+            </form>
+        </div>
+        <?php
+        $proxPositions = [];
+        foreach ($langs as $pl) {
+            foreach ($proxByLang[$pl] ?? [] as $pxItem) {
+                $proxPositions[$pxItem['position']] = true;
+            }
+        }
+        ksort($proxPositions);
+        $proxIndex = [];
+        foreach ($langs as $pl) {
+            foreach ($proxByLang[$pl] ?? [] as $pxItem) {
+                $proxIndex[$pl][$pxItem['position']] = $pxItem;
+            }
+        }
+        ?>
+        <?php foreach (array_keys($proxPositions) as $pxPos): ?>
+        <div class="lang-columns prox-row">
+            <?php foreach ($langs as $pl):
+                $pxItem = $proxIndex[$pl][$pxPos] ?? null;
+            ?>
+            <div class="lang-column">
+                <?php if ($pl === 'fr'): ?>
+                <div class="lang-column-header" style="padding:0.25rem 0.5rem">
+                    <span>#<?= $pxPos ?></span>
+                    <form method="POST" action="/admin/proximites/<?= $pxItem['id'] ?? 0 ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cette proximité ?')">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                        <button type="submit" class="btn btn-sm btn-danger" style="padding:0 0.4rem;font-size:0.65rem">✕</button>
+                    </form>
+                </div>
+                <?php endif; ?>
+                <?php if ($pxItem): ?>
+                <form method="POST" action="/admin/proximites/<?= $pxItem['id'] ?>/save" class="lang-column-body" style="padding:0.5rem">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Nom</label>
+                        <input type="text" name="name" value="<?= htmlspecialchars($pxItem['name'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Distance</label>
+                        <input type="text" name="distance" value="<?= htmlspecialchars($pxItem['distance'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Description</label>
+                        <input type="text" name="description" value="<?= htmlspecialchars($pxItem['description'] ?? '') ?>" style="font-size:0.75rem">
+                    </div>
+                    <?php if ($pl === 'fr'): ?>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Catégorie</label>
+                        <select name="category" style="font-size:0.75rem">
+                            <?php foreach (['ville', 'monument', 'vignoble', 'theatre', 'marche', 'nature', 'plage', 'sport'] as $cat): ?>
+                            <option value="<?= $cat ?>" <?= ($pxItem['category'] ?? '') === $cat ? 'selected' : '' ?>><?= ucfirst($cat) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size:0.65rem">Distance (min, tri)</label>
+                        <input type="number" name="distance_min" value="<?= (int)($pxItem['distance_min'] ?? 0) ?>" style="font-size:0.75rem" min="0">
+                    </div>
+                    <?php endif; ?>
+                    <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.65rem;padding:0.15rem 0.5rem">Sauver</button>
+                </form>
+                <?php else: ?>
+                <div class="lang-column-body" style="padding:0.5rem">
+                    <p class="lang-missing" style="font-size:0.7rem">—</p>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php elseif (!empty($shared)): ?>
+    <!-- Shared fields only (no translatable content) -->
+    <div class="lang-columns" style="grid-template-columns: 1fr">
+        <?php $s = $sectionIndex['fr'][$pos] ?? null; ?>
+        <?php if ($s): ?>
+        <form method="POST" action="/admin/sections/<?= $s['id'] ?>/save" class="lang-column-body" style="padding:0.75rem">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+            <input type="hidden" name="block_type" value="<?= htmlspecialchars($type) ?>">
+            <input type="hidden" name="title" value="<?= htmlspecialchars($s['title'] ?? '') ?>">
+            <p style="font-size:0.65rem;color:#999;margin-bottom:0.25rem">Paramètres partagés</p>
+            <?php foreach ($shared as $sf):
+                $sfVal = $frContent[$sf['name']] ?? '';
+            ?>
+                <?php if ($sf['type'] === 'text'): ?>
+                <div class="form-group">
+                    <label><?= $sf['label'] ?></label>
+                    <input type="text" name="fields[<?= $sf['name'] ?>]" value="<?= htmlspecialchars((string)$sfVal) ?>">
+                </div>
+                <?php elseif ($sf['type'] === 'number'): ?>
+                <div class="form-group">
+                    <label><?= $sf['label'] ?></label>
+                    <input type="number" name="fields[<?= $sf['name'] ?>]" value="<?= htmlspecialchars((string)$sfVal) ?>" min="1" max="50">
+                </div>
+                <?php elseif ($sf['type'] === 'select'): ?>
+                <div class="form-group">
+                    <label><?= $sf['label'] ?></label>
+                    <select name="fields[<?= $sf['name'] ?>]">
+                        <?php foreach ($sf['options'] as $optVal => $optLabel): ?>
+                        <option value="<?= htmlspecialchars($optVal) ?>" <?= (string)$sfVal === (string)$optVal ? 'selected' : '' ?>><?= htmlspecialchars($optLabel) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php elseif ($sf['type'] === 'checkbox'): ?>
+                <div class="form-group">
+                    <label><input type="hidden" name="fields[<?= $sf['name'] ?>]" value="0"><input type="checkbox" name="fields[<?= $sf['name'] ?>]" value="1" <?= !empty($sfVal) ? 'checked' : '' ?>> <?= $sf['label'] ?></label>
+                </div>
+                <?php elseif ($sf['type'] === 'json'): ?>
+                <div class="form-group">
+                    <label><?= $sf['label'] ?></label>
+                    <textarea name="fields[<?= $sf['name'] ?>]" rows="3" class="code-textarea"><?= htmlspecialchars(is_array($sfVal) ? json_encode($sfVal, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : (string)$sfVal) ?></textarea>
+                </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <input type="hidden" name="active" value="<?= $s['active'] ? '1' : '' ?>">
+            <button type="submit" class="btn btn-primary btn-sm mt-1">Enregistrer</button>
+        </form>
+        <?php endif; ?>
+    </div>
+    <?php else: ?>
+    <p class="text-muted text-sm" style="padding:0.5rem 0">Bloc géré automatiquement.</p>
     <?php endif; ?>
 </div>
 <?php endforeach; ?>
@@ -360,63 +617,113 @@ $fieldDefs = [
             </div>
         </div>
         <div class="section-card-footer">
-            <button type="submit" class="btn btn-primary btn-sm">Ajouter</button>
+            <button type="submit" class="btn btn-primary btn-sm">Ajouter (FR/EN/ES)</button>
         </div>
     </div>
 </form>
 
-<!-- Media Picker Modal -->
-<div id="media-picker-modal" class="media-modal" style="display:none">
+<?php endif; ?>
+
+<script>
+(function() {
+    // Buttons editor
+    function syncButtons(editor) {
+        const rows = editor.querySelectorAll('.button-row');
+        const btns = [];
+        rows.forEach(row => {
+            btns.push({
+                text: row.querySelector('.btn-text').value,
+                url: row.querySelector('.btn-url').value,
+                style: row.querySelector('.btn-style').value
+            });
+        });
+        editor.querySelector('.buttons-json').value = JSON.stringify(btns);
+    }
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-add-button')) {
+            const editor = e.target.closest('.buttons-editor');
+            const list = editor.querySelector('.buttons-list');
+            const idx = list.querySelectorAll('.button-row').length;
+            const row = document.createElement('div');
+            row.className = 'button-row';
+            row.dataset.index = idx;
+            row.innerHTML = '<input type="text" placeholder="Texte" class="btn-text" style="flex:1">'
+                + '<input type="text" placeholder="URL" class="btn-url" style="flex:1">'
+                + '<select class="btn-style" style="width:auto"><option value="primary">Principal</option><option value="outline">Outline</option><option value="external">Externe ↗</option></select>'
+                + '<button type="button" class="btn btn-sm btn-danger btn-remove-row" style="padding:0 0.4rem">&times;</button>';
+            list.appendChild(row);
+            syncButtons(editor);
+        }
+        if (e.target.closest('.btn-remove-row')) {
+            const row = e.target.closest('.button-row');
+            const editor = row.closest('.buttons-editor');
+            if (editor.querySelectorAll('.button-row').length > 1) {
+                row.remove();
+            } else {
+                row.querySelector('.btn-text').value = '';
+                row.querySelector('.btn-url').value = '';
+            }
+            syncButtons(editor);
+        }
+    });
+
+    document.addEventListener('input', (e) => {
+        if (e.target.closest('.button-row')) {
+            syncButtons(e.target.closest('.buttons-editor'));
+        }
+    });
+    document.addEventListener('change', (e) => {
+        if (e.target.closest('.button-row')) {
+            syncButtons(e.target.closest('.buttons-editor'));
+        }
+    });
+})();
+</script>
+
+<!-- Media Picker Modal for Sections -->
+<div id="section-media-modal" class="media-modal" style="display:none">
     <div class="media-modal-backdrop"></div>
     <div class="media-modal-content">
         <div class="media-modal-header">
             <h3>Choisir une image</h3>
-            <input type="text" id="media-picker-search" placeholder="Rechercher..." class="media-modal-search">
+            <input type="text" id="section-media-search" placeholder="Rechercher..." class="media-modal-search">
             <button type="button" class="media-modal-close">&times;</button>
         </div>
-        <div class="media-modal-body" id="media-picker-grid"></div>
+        <div class="media-modal-body" id="section-media-grid"></div>
     </div>
 </div>
 
 <script>
 (function() {
-    const modal = document.getElementById('media-picker-modal');
+    let imgCallback = null;
+    const modal = document.getElementById('section-media-modal');
     if (!modal) return;
-    const pickerGrid = document.getElementById('media-picker-grid');
-    const search = document.getElementById('media-picker-search');
+    const grid = document.getElementById('section-media-grid');
+    const search = document.getElementById('section-media-search');
     const backdrop = modal.querySelector('.media-modal-backdrop');
     const closeBtn = modal.querySelector('.media-modal-close');
     let allFiles = [];
-    let onSelect = null;
 
-    // Unified click handler
     document.addEventListener('click', (e) => {
-        // Multi-image: add photo to section field (hero, prose, etc.)
-        const secBtn = e.target.closest('.btn-add-section-image');
-        if (secBtn) {
-            const gridId = secBtn.dataset.gridId;
-            const hiddenId = secBtn.dataset.hiddenId;
-            onSelect = (file) => addToGrid(gridId, hiddenId, file);
+        const pickBtn = e.target.closest('.btn-pick-image');
+        if (pickBtn) {
+            const picker = pickBtn.closest('.section-image-picker');
+            const input = picker.querySelector('.section-image-input');
+            imgCallback = function(file) {
+                input.value = file;
+                // Update preview
+                let preview = picker.querySelector('img');
+                if (!preview) {
+                    const div = document.createElement('div');
+                    div.style.marginTop = '0.3rem';
+                    div.innerHTML = '<img src="/uploads/' + file + '" alt="" style="max-width:120px;max-height:80px;border-radius:4px;border:1px solid #e2e8f0" loading="lazy">';
+                    picker.appendChild(div);
+                } else {
+                    preview.src = '/uploads/' + file;
+                }
+            };
             openModal();
-            return;
-        }
-
-        // Multi-image: add photo to piece (inline cards)
-        const pieceBtn = e.target.closest('.btn-add-piece-image');
-        if (pieceBtn) {
-            const pid = pieceBtn.dataset.pieceId;
-            onSelect = (file) => addToGrid('pimgs-grid-' + pid, 'pimgs-' + pid, file);
-            openModal();
-            return;
-        }
-
-        // Remove photo from any multi-image grid
-        const rmBtn = e.target.closest('.piece-img-remove');
-        if (rmBtn) {
-            const thumb = rmBtn.closest('.piece-img-thumb');
-            const g = thumb.closest('.piece-images-grid');
-            thumb.remove();
-            syncGrid(g);
         }
     });
 
@@ -429,70 +736,33 @@ $fieldDefs = [
         modal.style.display = 'flex';
         search.value = '';
         if (allFiles.length === 0) {
-            pickerGrid.innerHTML = '<p style="padding:1rem;color:#888">Chargement...</p>';
+            grid.innerHTML = '<p style="padding:1rem;color:#888">Chargement...</p>';
             fetch('/admin/api/media-list')
                 .then(r => r.json())
                 .then(files => { allFiles = files; renderGrid(''); })
-                .catch(() => { pickerGrid.innerHTML = '<p style="padding:1rem;color:#c00">Erreur de chargement</p>'; });
+                .catch(() => { grid.innerHTML = '<p style="padding:1rem;color:#c00">Erreur de chargement</p>'; });
         } else {
             renderGrid('');
         }
         search.focus();
     }
 
-    function closeModal() { modal.style.display = 'none'; onSelect = null; }
-
-    // Add image to a grid + sync hidden input
-    function addToGrid(gridId, hiddenId, file) {
-        const g = document.getElementById(gridId);
-        if (!g || g.querySelector('[data-file="' + file + '"]')) return;
-        const div = document.createElement('div');
-        div.className = 'piece-img-thumb';
-        div.dataset.file = file;
-        div.innerHTML = '<img src="/uploads/' + file + '" alt="" loading="lazy">'
-            + '<button type="button" class="piece-img-remove" title="Retirer">&times;</button>';
-        g.appendChild(div);
-        syncGrid(g);
-    }
-
-    // Sync grid state to hidden input(s)
-    function syncGrid(g) {
-        if (!g) return;
-        const files = Array.from(g.querySelectorAll('.piece-img-thumb')).map(t => t.dataset.file);
-        // Find associated hidden input (sibling or by ID convention)
-        const id = g.id;
-        let hidden;
-        if (id.startsWith('pimgs-grid-')) {
-            hidden = document.getElementById(id.replace('-grid', ''));
-        } else if (id.startsWith('simgs-')) {
-            hidden = document.getElementById(id.replace('-grid', ''));
-        }
-        if (hidden) hidden.value = JSON.stringify(files);
-        // Also update single image field for pieces
-        const form = g.closest('form');
-        if (form) {
-            const imgInput = form.querySelector('input[name="image"]');
-            if (imgInput) imgInput.value = files[0] || '';
-        }
-    }
+    function closeModal() { modal.style.display = 'none'; imgCallback = null; }
 
     function renderGrid(filter) {
         const filtered = filter ? allFiles.filter(f => f.toLowerCase().includes(filter)) : allFiles;
-        pickerGrid.innerHTML = filtered.map(f => `
+        grid.innerHTML = filtered.map(f => `
             <div class="media-thumb" data-file="${f}">
                 <img src="/uploads/${f}" alt="${f}" loading="lazy">
                 <span class="media-thumb-name">${f.replace('villa-plaisance-','').replace('.webp','')}</span>
             </div>
         `).join('');
-
-        pickerGrid.querySelectorAll('.media-thumb').forEach(thumb => {
+        grid.querySelectorAll('.media-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => {
-                if (onSelect) onSelect(thumb.dataset.file);
+                if (imgCallback) imgCallback(thumb.dataset.file);
                 closeModal();
             });
         });
     }
 })();
 </script>
-
-<?php endif; ?>

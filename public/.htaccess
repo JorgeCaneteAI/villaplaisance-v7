@@ -1,6 +1,28 @@
 RewriteEngine On
 RewriteBase /
 
+# ═══ 301 Redirects from old villaplaisance.fr ═══
+# Homepage
+RewriteCond %{HTTP_HOST} ^(www\.)?villaplaisance\.fr$ [NC]
+RewriteRule ^$ https://v1.villaplaisance.fr/ [R=301,L]
+
+# Old page slugs → new URLs
+RewriteRule ^chambre-hotes-bedarrides/?$ /chambres-d-hotes [R=301,L]
+RewriteRule ^maison-hotes-bedarrides/?$ /location-villa-provence [R=301,L]
+RewriteRule ^recommandations/?$ /sur-place [R=301,L]
+RewriteRule ^contact/?$ /contact [R=301,L]
+RewriteRule ^politique-confidentialite-bedarrides/?$ /politique-confidentialite [R=301,L]
+RewriteRule ^politique-de-cookies-ue/?$ /politique-confidentialite [R=301,L]
+RewriteRule ^hello-world/?$ / [R=301,L]
+
+# Catch-all: old domain → new domain root
+RewriteCond %{HTTP_HOST} ^(www\.)?villaplaisance\.fr$ [NC]
+RewriteRule ^(.*)$ https://v1.villaplaisance.fr/$1 [R=301,L]
+
+# ═══ Force HTTPS (production) ═══
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
 # If file or directory exists, serve it directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

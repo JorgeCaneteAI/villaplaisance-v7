@@ -1,8 +1,9 @@
 <?php
-// Fetch stats from DB
+// Fetch stats from DB for current language
 $items = [];
 try {
-    $items = Database::fetchAll("SELECT * FROM vp_stats ORDER BY position ASC");
+    $currentLang = LangService::get();
+    $items = Database::fetchAll("SELECT * FROM vp_stats WHERE lang = ? ORDER BY position ASC", [$currentLang]);
 } catch (\Throwable) {
     $items = $items ?? [];
 }

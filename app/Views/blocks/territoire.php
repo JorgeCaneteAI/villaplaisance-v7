@@ -3,7 +3,8 @@ $heading = $heading ?? t('home.territoire.title');
 
 $proximites = [];
 try {
-    $proximites = Database::fetchAll("SELECT * FROM vp_proximites ORDER BY distance_min ASC");
+    $currentLang = LangService::get();
+    $proximites = Database::fetchAll("SELECT * FROM vp_proximites WHERE lang = ? ORDER BY distance_min ASC", [$currentLang]);
 } catch (\Throwable) {}
 if (empty($proximites)) return;
 ?>

@@ -148,58 +148,69 @@
      ═══════════════════════════════════════════ -->
 <div class="admin-card">
     <h2>Points forts &amp; équipements</h2>
-    <p class="text-sm text-muted mb-2">Cochez les offres pour lesquelles chaque équipement est disponible.</p>
+    <p class="text-sm text-muted mb-2">Traduisez le nom et la description de chaque équipement. Les offres BB/Villa se gèrent depuis la colonne FR.</p>
 
     <?php if (!empty($amenities)): ?>
     <?php foreach ($amenities as $category => $items): ?>
     <div class="amenity-category">
         <h3 class="reglage-subtitle"><?= htmlspecialchars($category) ?> <span class="badge badge-info"><?= count($items) ?></span></h3>
-        <table class="amenity-table">
-            <thead>
-                <tr>
-                    <th>Équipement</th>
-                    <th class="amenity-col-offer">Chambres</th>
-                    <th class="amenity-col-offer">Villa</th>
-                    <th class="amenity-col-action"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($items as $item): ?>
-                <tr>
-                    <td>
-                        <span class="amenity-name"><?= htmlspecialchars($item['name']) ?></span>
-                        <?php if (!empty($item['description'])): ?>
-                        <span class="amenity-desc"><?= htmlspecialchars($item['description']) ?></span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="amenity-col-offer">
-                        <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/toggle" class="amenity-toggle-form">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                            <input type="hidden" name="field" value="offer_bb">
-                            <button type="submit" class="amenity-check <?= $item['offer_bb'] ? 'is-active' : '' ?>" title="<?= $item['offer_bb'] ? 'Disponible en Chambres d\'hôtes' : 'Non disponible en Chambres d\'hôtes' ?>">
-                                <?= $item['offer_bb'] ? '✓' : '—' ?>
-                            </button>
-                        </form>
-                    </td>
-                    <td class="amenity-col-offer">
-                        <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/toggle" class="amenity-toggle-form">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                            <input type="hidden" name="field" value="offer_villa">
-                            <button type="submit" class="amenity-check <?= $item['offer_villa'] ? 'is-active' : '' ?>" title="<?= $item['offer_villa'] ? 'Disponible en Villa' : 'Non disponible en Villa' ?>">
-                                <?= $item['offer_villa'] ? '✓' : '—' ?>
-                            </button>
-                        </form>
-                    </td>
-                    <td class="amenity-col-action">
-                        <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/delete" onsubmit="return confirm('Supprimer cet équipement ?')" class="amenity-delete">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                            <button type="submit" class="btn-icon" title="Supprimer">✕</button>
-                        </form>
-                    </td>
-                </tr>
+
+        <?php foreach ($items as $item):
+            $key = $item['category'] . ':' . $item['position'];
+        ?>
+        <div class="block-row" style="margin-bottom:0.75rem">
+            <div class="lang-columns">
+                <?php foreach ($langs as $l):
+                    $a = $amenityIndex[$l][$key] ?? null;
+                ?>
+                <div class="lang-column">
+                    <?php if ($l === 'fr'): ?>
+                    <div class="lang-column-header" style="padding:0.25rem 0.5rem;font-size:0.7rem">
+                        <span><?= $langLabels[$l] ?></span>
+                        <div style="display:flex;gap:0.3rem;align-items:center">
+                            <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/toggle" style="display:inline">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                                <input type="hidden" name="field" value="offer_bb">
+                                <button type="submit" class="amenity-check <?= $item['offer_bb'] ? 'is-active' : '' ?>" style="font-size:0.6rem;padding:0.1rem 0.3rem" title="Chambres">BB <?= $item['offer_bb'] ? '✓' : '—' ?></button>
+                            </form>
+                            <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/toggle" style="display:inline">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                                <input type="hidden" name="field" value="offer_villa">
+                                <button type="submit" class="amenity-check <?= $item['offer_villa'] ? 'is-active' : '' ?>" style="font-size:0.6rem;padding:0.1rem 0.3rem" title="Villa">Villa <?= $item['offer_villa'] ? '✓' : '—' ?></button>
+                            </form>
+                            <form method="POST" action="/admin/reglages/amenity/<?= $item['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer cet équipement ?')">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                                <button type="submit" class="btn btn-sm btn-danger" style="padding:0 0.3rem;font-size:0.6rem">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                    <?php else: ?>
+                    <div class="lang-column-header" style="padding:0.25rem 0.5rem;font-size:0.7rem">
+                        <span><?= $langLabels[$l] ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($a): ?>
+                    <form method="POST" action="/admin/reglages/amenity/<?= $a['id'] ?>/update" class="lang-column-body" style="padding:0.4rem">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                        <input type="hidden" name="category" value="<?= htmlspecialchars($a['category']) ?>">
+                        <div class="form-group" style="margin-bottom:0.2rem">
+                            <input type="text" name="name" value="<?= htmlspecialchars($a['name'] ?? '') ?>" placeholder="Nom" style="font-size:0.75rem;padding:0.2rem 0.4rem">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.2rem">
+                            <input type="text" name="description" value="<?= htmlspecialchars($a['description'] ?? '') ?>" placeholder="Description" style="font-size:0.7rem;padding:0.2rem 0.4rem;color:#666">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" style="font-size:0.6rem;padding:0.1rem 0.4rem">Sauver</button>
+                    </form>
+                    <?php else: ?>
+                    <div class="lang-column-body" style="padding:0.4rem">
+                        <p class="lang-missing" style="font-size:0.7rem">—</p>
+                    </div>
+                    <?php endif; ?>
+                </div>
                 <?php endforeach; ?>
-            </tbody>
-        </table>
+            </div>
+        </div>
+        <?php endforeach; ?>
     </div>
     <?php endforeach; ?>
     <?php else: ?>
@@ -216,7 +227,7 @@
         <input type="text" name="description" placeholder="Description (optionnel)">
         <label class="amenity-add-check"><input type="checkbox" name="offer_bb" value="1" checked> BB</label>
         <label class="amenity-add-check"><input type="checkbox" name="offer_villa" value="1" checked> Villa</label>
-        <button type="submit" class="btn btn-sm">+ Ajouter</button>
+        <button type="submit" class="btn btn-sm">+ Ajouter (FR/EN/ES)</button>
     </form>
 
     <?php if (!empty($amenities)): ?>

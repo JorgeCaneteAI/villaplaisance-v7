@@ -118,7 +118,6 @@ a:hover { color: var(--accent); }
   transition: color 0.5s;
 }
 .logo-img { width: 40px; height: 40px; border-radius: 50%; }
-.logo-text { transition: color 0.5s; }
 .site-header.scrolled .logo { color: var(--dark); }
 
 .nav-list { display: flex; gap: var(--space-8); list-style: none; }
@@ -152,7 +151,7 @@ a:hover { color: var(--accent); }
 .nav-toggle-bar { width: 22px; height: 1px; background: #fff; transition: transform 0.25s, background 0.5s; }
 .site-header.scrolled .nav-toggle-bar { background: var(--dark); }
 
-.lang-switcher { display: flex; gap: var(--space-3); }
+.lang-switcher { display: flex; gap: var(--space-3); align-items: center; }
 .lang-switcher a {
   font-size: 0.65rem; font-weight: 400; color: rgba(255,255,255,0.4);
   letter-spacing: 0.15em;
@@ -160,14 +159,21 @@ a:hover { color: var(--accent); }
   display: inline-flex; align-items: center; justify-content: center;
   transition: color 0.4s;
 }
-.lang-switcher a.active { color: rgba(255,255,255,0.9); }
+.lang-switcher a.active {
+  color: #fff;
+  background: var(--accent);
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  min-height: 28px;
+  font-weight: 600;
+}
 .site-header.scrolled .lang-switcher a { color: var(--text-muted); }
-.site-header.scrolled .lang-switcher a.active { color: var(--dark); }
+.site-header.scrolled .lang-switcher a.active {
+  color: #fff;
+  background: var(--accent);
+}
 
 @media (max-width: 1023px) {
-  /* 1. Hide logo text on mobile, keep logo image only */
-  .logo-text { display: none; }
-
   /* 1. Add background to header on mobile */
   .site-header { background: rgba(26,24,20,0.75); }
   .site-header.scrolled { background: rgba(255,255,255,0.97); }
@@ -927,6 +933,81 @@ details[open] .faq-question::after { content: '\2212'; }
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* ─── Mappemonde ─── */
+.section-map { padding: 0 0 var(--section-py) 0; background: var(--bg) !important; color: var(--text) !important; }
+.map-hero { width: 100%; }
+.guest-map { width: 100%; height: 70vh; min-height: 400px; max-height: 600px; }
+.guest-map .leaflet-control-attribution { font-size: 0.6rem; opacity: 0.6; }
+.section-map h2 { text-align: center; margin-bottom: 0.25rem; padding-top: 2.5rem; color: var(--text); line-height: 1.05; }
+.map-heading-sub { font-size: 0.8em; opacity: 0.55; }
+.map-stats { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 1.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--text-light); }
+.map-stat strong { color: var(--accent); font-weight: 600; }
+
+/* Map pins */
+.map-pin-home { background: none !important; border: none !important; }
+.pin-home-inner {
+  width: 16px; height: 16px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border: 2px solid #fff;
+}
+.map-pin-guest { background: none !important; border: none !important; }
+.pin-guest-inner {
+  width: 10px; height: 10px;
+  background: #1A6EB8;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  border: 1.5px solid #fff;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+.map-pin-guest:hover .pin-guest-inner { transform: scale(1.4); }
+
+/* City list below map */
+.map-cities {
+  margin-top: 1.5rem; padding-bottom: 3rem; text-align: center;
+  font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic;
+  color: var(--text-light); line-height: 2;
+}
+.map-city { white-space: nowrap; }
+.map-city-sep { margin: 0 0.4rem; color: #ccc; }
+
+@media (max-width: 768px) {
+  .guest-map { height: 350px; }
+  .map-cities { font-size: 0.75rem; }
+}
+
+/* ─── Livret d'accueil ─── */
+.livret-gate { min-height: 80vh; display: flex; align-items: center; }
+.livret-gate-title { font-size: 2.5rem; margin-bottom: 0.25rem; }
+.livret-gate-subtitle { color: var(--text-light); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; margin-bottom: 2.5rem; }
+.livret-gate-form { display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+.livret-gate-input {
+  width: 100%; max-width: 320px; padding: 0.85rem 1.25rem;
+  border: 1px solid #ddd; border-radius: 8px; font-size: 1rem;
+  text-align: center; letter-spacing: 0.15em;
+  transition: border-color 0.3s;
+}
+.livret-gate-input:focus { outline: none; border-color: var(--accent); }
+.livret-gate-type { display: flex; justify-content: center; gap: 0.75rem; font-size: 0.85rem; color: var(--text-light); }
+.livret-gate-type a { color: var(--text-light); transition: color 0.3s; }
+.livret-gate-type a.active { color: var(--accent); font-weight: 600; }
+
+.livret-header { padding-top: var(--section-py); }
+.livret-header h1 { margin-bottom: 0.5rem; }
+.livret-type-nav { display: flex; justify-content: center; gap: 0.75rem; font-size: 0.9rem; color: var(--text-light); margin-bottom: 2rem; }
+.livret-type-nav a { color: var(--text-light); transition: color 0.3s; }
+.livret-type-nav a.active { color: var(--accent); font-weight: 600; }
+
+.livret-section { padding: 2rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.livret-section:last-child { border-bottom: none; }
+.livret-section h2 { font-size: 1.4rem; margin-bottom: 0.75rem; }
+.livret-content { color: var(--text-light); line-height: 1.8; }
+
+.livret-message-section { padding: var(--section-py) 0; background: var(--cream); }
+.livret-message-section h2 { margin-bottom: 1.5rem; }
 
 /* ─── Footer ─── */
 .site-footer {

@@ -19,7 +19,7 @@ if (file_exists($envFile)) {
 }
 
 // Constants
-define('SUPPORTED_LANGS', ['fr', 'en', 'es', 'de']);
+define('SUPPORTED_LANGS', ['fr', 'en', 'es']);
 define('DEFAULT_LANG', 'fr');
 define('APP_ENV', $_ENV['APP_ENV'] ?? 'development');
 define('APP_URL', $_ENV['APP_URL'] ?? 'http://localhost:8000');
@@ -30,6 +30,7 @@ require ROOT . '/app/Services/LangService.php';
 require ROOT . '/app/Services/SeoService.php';
 require ROOT . '/app/Services/BlockService.php';
 require ROOT . '/app/Services/ImageService.php';
+require ROOT . '/app/Services/AnthropicService.php';
 
 // PSR-4 minimal autoloader for App\ namespace
 spl_autoload_register(function (string $class): void {

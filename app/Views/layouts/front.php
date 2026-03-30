@@ -65,7 +65,6 @@
         <div class="container header-inner">
             <a href="<?= LangService::url('accueil') ?>" class="logo" aria-label="Villa Plaisance — Accueil">
                 <img src="/assets/img/logo.svg" alt="Villa Plaisance" class="logo-img" width="44" height="44">
-                <span class="logo-text">Villa Plaisance</span>
             </a>
 
             <nav class="main-nav" role="navigation" aria-label="Navigation principale">
@@ -76,6 +75,7 @@
                 </button>
                 <ul id="nav-menu" class="nav-list">
                     <li class="nav-close-wrap"><button class="nav-close" aria-label="Fermer le menu"></button></li>
+                    <li><a href="<?= LangService::url('/') ?>"><?= t('nav.home') ?></a></li>
                     <li><a href="<?= LangService::url('chambres-d-hotes') ?>"><?= t('nav.chambres') ?></a></li>
                     <li><a href="<?= LangService::url('location-villa-provence') ?>"><?= t('nav.villa') ?></a></li>
                     <li><a href="<?= LangService::url('espaces-exterieurs') ?>"><?= t('nav.exterieurs') ?></a></li>

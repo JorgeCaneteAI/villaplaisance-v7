@@ -121,6 +121,7 @@ class BlockService
             'articles' => 'Articles (extraits)',
             'petit-dejeuner' => 'Petit-déjeuner',
             'piscine' => 'Piscine',
+            'mappemonde' => 'Mappemonde (origines clients)',
         ];
     }
 }

@@ -84,6 +84,20 @@ return [
     'footer.plan' => 'Plan du site',
     'footer.rights' => '© :year Villa Plaisance — Bédarrides, Provence',
 
+    // Livret d'accueil
+    'livret.title' => 'Livret d\'accueil',
+    'livret.password_prompt' => 'Entrez le code d\'accès',
+    'livret.password_error' => 'Code incorrect',
+    'livret.password_submit' => 'Accéder',
+    'livret.type_bb' => 'Chambres d\'hôtes',
+    'livret.type_villa' => 'Villa entière',
+    'livret.message_title' => 'Une question ?',
+    'livret.message_success' => 'Message envoyé, merci !',
+    'livret.message_name' => 'Votre nom',
+    'livret.message_email' => 'Votre email',
+    'livret.message_body' => 'Votre message',
+    'livret.message_send' => 'Envoyer',
+
     // Misc
     'readmore' => 'Lire la suite',
     'back' => 'Retour',
