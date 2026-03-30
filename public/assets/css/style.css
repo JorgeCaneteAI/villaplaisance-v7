@@ -766,7 +766,7 @@ h3 {
   .prose-text {
     position: relative;
     z-index: 2;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem 1rem 50px;
     max-width: 45%;
     background: #fff;
     border-radius: 0 2rem 0 0;
