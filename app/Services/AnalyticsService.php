@@ -48,10 +48,12 @@ class AnalyticsService
         }
 
         $visitorId = hash('sha256', $visitorRaw);
-        $ipHash = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
-        $referrer = $_SERVER['HTTP_REFERER'] ?? null;
+        $ip        = $_SERVER['REMOTE_ADDR'] ?? '';
+        $ipHash    = hash('sha256', $ip);
+        $referrer  = $_SERVER['HTTP_REFERER'] ?? null;
         $deviceType = self::detectDevice($ua);
-        $lang = \LangService::current();
+        $lang    = \LangService::current();
+        $country = self::detectCountry($ip);
 
         try {
             \Database::insert('vp_pageviews', [
@@ -62,6 +64,7 @@ class AnalyticsService
                 'device_type' => $deviceType,
                 'ip_hash' => $ipHash,
                 'lang' => $lang,
+                'country' => $country,
             ]);
         } catch (\Throwable) {
             // Silently fail — analytics should never break the site
@@ -91,5 +94,28 @@ class AnalyticsService
             return 'tablet';
         }
         return 'desktop';
+    }
+
+    private static function detectCountry(string $ip): ?string
+    {
+        if ($ip === '' || $ip === '127.0.0.1' || str_starts_with($ip, '192.168.') || str_starts_with($ip, '10.')) {
+            return null;
+        }
+
+        // Priorité 1 : en-tête Cloudflare (si le site passe par CF un jour)
+        $cf = $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '';
+        if ($cf !== '' && $cf !== 'XX' && strlen($cf) === 2) {
+            return strtoupper($cf);
+        }
+
+        // Priorité 2 : extension PHP geoip (disponible sur o2switch)
+        if (function_exists('geoip_country_code_by_name')) {
+            $code = @geoip_country_code_by_name($ip);
+            if ($code !== false && $code !== '' && strlen($code) === 2) {
+                return strtoupper($code);
+            }
+        }
+
+        return null;
     }
 }

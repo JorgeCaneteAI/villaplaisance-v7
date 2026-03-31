@@ -102,13 +102,27 @@ class AnalyticsController extends AdminBaseController
              ORDER BY cnt DESC"
         );
 
+        // Top countries
+        $countryStats = [];
+        try {
+            $countryStats = \Database::fetchAll(
+                "SELECT country, COUNT(*) as cnt, COUNT(DISTINCT visitor_id) as uniques
+                 FROM vp_pageviews
+                 WHERE country IS NOT NULL
+                   AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                 GROUP BY country
+                 ORDER BY cnt DESC
+                 LIMIT 10"
+            );
+        } catch (\Throwable) {}
+
         $csrf = $this->csrf();
 
         $this->render('admin/analytics', compact(
             'today', 'week', 'month',
             'chart', 'topPages', 'topReferrers',
             'devices', 'deviceTotal', 'deviceMap',
-            'topArticles', 'langStats', 'csrf'
+            'topArticles', 'langStats', 'countryStats', 'csrf'
         ));
     }
 }

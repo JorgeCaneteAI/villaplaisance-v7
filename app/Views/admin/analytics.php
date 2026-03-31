@@ -157,3 +157,52 @@
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Origines géographiques -->
+<?php
+// Helper : code pays → drapeau emoji
+function countryFlag(string $code): string {
+    $code = strtoupper($code);
+    if (strlen($code) !== 2) return '🌐';
+    $chars = str_split($code);
+    return mb_chr(ord($chars[0]) + 127397) . mb_chr(ord($chars[1]) + 127397);
+}
+// Noms des pays les plus courants
+$countryNames = [
+    'FR' => 'France', 'BE' => 'Belgique', 'CH' => 'Suisse', 'LU' => 'Luxembourg',
+    'GB' => 'Royaume-Uni', 'DE' => 'Allemagne', 'NL' => 'Pays-Bas', 'IT' => 'Italie',
+    'ES' => 'Espagne', 'PT' => 'Portugal', 'US' => 'États-Unis', 'CA' => 'Canada',
+    'AU' => 'Australie', 'JP' => 'Japon', 'SE' => 'Suède', 'NO' => 'Norvège',
+    'DK' => 'Danemark', 'FI' => 'Finlande', 'AT' => 'Autriche', 'PL' => 'Pologne',
+    'CZ' => 'Tchéquie', 'RU' => 'Russie', 'CN' => 'Chine', 'IN' => 'Inde',
+    'BR' => 'Brésil', 'MX' => 'Mexique', 'AR' => 'Argentine', 'ZA' => 'Afrique du Sud',
+    'MA' => 'Maroc', 'TN' => 'Tunisie', 'DZ' => 'Algérie', 'SG' => 'Singapour',
+    'IE' => 'Irlande', 'IL' => 'Israël', 'TR' => 'Turquie', 'GR' => 'Grèce',
+];
+?>
+<div class="admin-card" style="margin-bottom:1.5rem">
+    <h2>Origines géographiques <span style="font-size:0.75rem;font-weight:400;color:#888">— 30 derniers jours</span></h2>
+    <?php if (empty($countryStats)): ?>
+    <p class="text-muted">Aucune donnée géographique disponible. Les nouvelles visites seront enregistrées automatiquement.</p>
+    <?php else: ?>
+    <?php $countryTotal = array_sum(array_column($countryStats, 'cnt')); ?>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0.5rem">
+    <?php foreach ($countryStats as $cs):
+        $code = strtoupper($cs['country'] ?? '');
+        $pct  = $countryTotal > 0 ? round((int)$cs['cnt'] / $countryTotal * 100) : 0;
+        $name = $countryNames[$code] ?? $code;
+        $flag = countryFlag($code);
+    ?>
+    <div style="padding:0.5rem 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;margin-bottom:0.25rem">
+            <span><?= $flag ?> <strong><?= htmlspecialchars($name) ?></strong></span>
+            <span style="color:#888"><?= number_format((int)$cs['cnt']) ?> vues &nbsp;·&nbsp; <?= number_format((int)$cs['uniques']) ?> uniques &nbsp;<span style="color:#bbb">(<?= $pct ?>%)</span></span>
+        </div>
+        <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:<?= $pct ?>%;background:var(--admin-accent);border-radius:3px;opacity:0.75"></div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</div>
