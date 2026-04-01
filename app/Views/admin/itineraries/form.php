@@ -117,33 +117,33 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
         </div>
     </div>
 
-    <!-- Commentaires existants -->
-    <?php if ($isEdit && !empty($comments)): ?>
-    <div class="admin-card" style="margin-bottom:1rem">
-        <h2>Commentaires reçus (<?= count($comments) ?>)</h2>
-        <?php foreach ($comments as $c): ?>
-        <div style="border:1px solid #e8e0d8;border-radius:8px;padding:0.75rem;margin-bottom:0.5rem;background:#fafaf8">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem">
-                <strong style="font-size:0.85rem"><?= htmlspecialchars($c['guest_name']) ?></strong>
-                <div style="display:flex;align-items:center;gap:0.5rem">
-                    <span style="font-size:0.72rem;color:#aaa"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></span>
-                    <form method="post" action="/admin/itineraires/comment/<?= $c['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer ce commentaire ?')">
-                        <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-                        <button type="submit" class="btn-danger" style="font-size:0.65rem;padding:0.15rem 0.4rem">Suppr.</button>
-                    </form>
-                </div>
-            </div>
-            <p style="font-size:0.85rem;color:#555;margin:0"><?= nl2br(htmlspecialchars($c['message'])) ?></p>
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php endif; ?>
-
     <div style="display:flex;gap:1rem;justify-content:flex-end">
         <a href="/admin/itineraires" class="btn-secondary">Annuler</a>
         <button type="submit" class="btn-primary"><?= $isEdit ? 'Mettre à jour' : 'Créer l\'itinéraire' ?></button>
     </div>
 </form>
+
+<!-- Commentaires (en dehors du formulaire principal) -->
+<?php if ($isEdit && !empty($comments)): ?>
+<div class="admin-card" style="margin-top:1rem;margin-bottom:1rem">
+    <h2>Commentaires reçus (<?= count($comments) ?>)</h2>
+    <?php foreach ($comments as $c): ?>
+    <div style="border:1px solid #e8e0d8;border-radius:8px;padding:0.75rem;margin-bottom:0.5rem;background:#fafaf8">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem">
+            <strong style="font-size:0.85rem"><?= htmlspecialchars($c['guest_name']) ?></strong>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                <span style="font-size:0.72rem;color:#aaa"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></span>
+                <form method="post" action="/admin/itineraires/comment/<?= $c['id'] ?>/delete" style="display:inline" onsubmit="return confirm('Supprimer ce commentaire ?')">
+                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                    <button type="submit" class="btn-danger" style="font-size:0.65rem;padding:0.15rem 0.4rem">Suppr.</button>
+                </form>
+            </div>
+        </div>
+        <p style="font-size:0.85rem;color:#555;margin:0"><?= nl2br(htmlspecialchars($c['message'])) ?></p>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
 
 <template id="step-template">
     <div class="step-row" style="border:1px solid #e8e0d8;border-radius:8px;padding:1rem;margin-bottom:0.75rem;background:#fafaf8">
