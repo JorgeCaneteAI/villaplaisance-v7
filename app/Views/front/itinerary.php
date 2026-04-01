@@ -440,7 +440,11 @@ $stopCount = max(0, count($steps) - 2);
             <?php if (!empty($step['time_label'])): ?>
             <div class="step-time"><?= htmlspecialchars($step['time_label']) ?></div>
             <?php endif; ?>
+            <?php if (!empty($step['link'])): ?>
+            <a href="<?= htmlspecialchars($step['link']) ?>" target="_blank" rel="noopener" class="step-title" style="text-decoration:none;color:#2c3e50"><?= htmlspecialchars($step['title']) ?> <span style="font-size:0.7em;color:#8B7355">&#x2197;</span></a>
+            <?php else: ?>
             <div class="step-title"><?= htmlspecialchars($step['title']) ?></div>
+            <?php endif; ?>
             <?php if (!empty($step['duration'])): ?>
             <div class="step-duration"><?= htmlspecialchars($step['duration']) ?></div>
             <?php endif; ?>

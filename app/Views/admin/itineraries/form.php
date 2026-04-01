@@ -106,6 +106,11 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
                             <?php endif; ?>
                         </div>
                     </div>
+                    <div style="margin-top:0.5rem">
+                        <label style="font-size:0.72rem;color:#888">Lien (Google Maps, site web...)</label>
+                        <input type="url" name="step_link[]" value="<?= htmlspecialchars($step['link'] ?? '') ?>" class="form-input" placeholder="https://maps.app.goo.gl/..." style="font-size:0.8rem">
+                    </div>
+                    </div>
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -165,6 +170,10 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
                     <button type="button" onclick="openMediaPicker(this)" class="btn-secondary" style="font-size:0.75rem;padding:0.35rem 0.5rem;white-space:nowrap">Choisir</button>
                 </div>
             </div>
+        </div>
+        <div style="margin-top:0.5rem">
+            <label style="font-size:0.72rem;color:#888">Lien (Google Maps, site web...)</label>
+            <input type="url" name="step_link[]" value="" class="form-input" placeholder="https://maps.app.goo.gl/..." style="font-size:0.8rem">
         </div>
     </div>
 </template>

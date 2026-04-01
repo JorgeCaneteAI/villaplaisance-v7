@@ -168,6 +168,7 @@ class AdminItineraryController extends AdminBaseController
         $durations    = $_POST['step_duration'] ?? [];
         $descriptions = $_POST['step_description'] ?? [];
         $images       = $_POST['step_image'] ?? [];
+        $links        = $_POST['step_link'] ?? [];
 
         foreach ($titles as $i => $title) {
             $title = trim($title);
@@ -183,6 +184,10 @@ class AdminItineraryController extends AdminBaseController
             $img = trim($images[$i] ?? '');
             if ($img !== '') {
                 $data['image'] = $img;
+            }
+            $link = trim($links[$i] ?? '');
+            if ($link !== '') {
+                $data['link'] = $link;
             }
             \Database::insert('vp_itinerary_steps', $data);
         }
