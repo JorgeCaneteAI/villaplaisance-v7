@@ -42,8 +42,8 @@ $stopCount = max(0, count($steps) - 2);
 
 /* ── Hero ── */
 .itinerary-hero {
-    text-align: center;
-    padding: 2.5rem 1rem 2rem;
+    text-align: left;
+    padding: 3.5rem 0 2rem;
     margin-bottom: 0;
 }
 .itinerary-hero-label {
@@ -85,11 +85,11 @@ $stopCount = max(0, count($steps) - 2);
     color: #777;
     line-height: 1.7;
     max-width: 520px;
-    margin: 0 auto;
+    margin: 0;
 }
 .itinerary-hero-stats {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 2rem;
     margin-top: 1.5rem;
     padding-top: 1.2rem;
@@ -273,24 +273,28 @@ $stopCount = max(0, count($steps) - 2);
     text-align: center;
     margin-top: 2rem;
     padding: 1.5rem;
-    background: #fafaf8;
+    background: #88A398;
     border-radius: 12px;
-    border: 1px solid #e8e0d8;
 }
 .itinerary-footer-logo {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: 1.1rem;
     font-weight: 500;
-    color: #2c3e50;
+    color: #fff;
     margin-bottom: 0.25rem;
 }
 .itinerary-footer-logo a {
-    color: #2c3e50;
+    color: #fff;
     text-decoration: none;
 }
 .itinerary-footer-sub {
-    font-size: 0.75rem;
-    color: #aaa;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.8);
+}
+.itinerary-footer-sub a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 /* ── Mobile ── */
@@ -383,8 +387,8 @@ $stopCount = max(0, count($steps) - 2);
         <div class="itinerary-footer-logo"><a href="<?= APP_URL ?>">Villa Plaisance</a></div>
         <div class="itinerary-footer-sub">
             <?= $itLang === 'en'
-                ? 'Prepared with care by Jorge Canete from <a href="' . APP_URL . '">La Villa Plaisance</a>'
-                : 'Préparé avec soin par Jorge Canete, <a href="' . APP_URL . '">La Villa Plaisance</a>' ?>
+                ? 'Prepared with care by <a href="' . APP_URL . '/votre-hote">Jorge Canete</a> from <a href="' . APP_URL . '">La Villa Plaisance</a>'
+                : 'Préparé avec soin par <a href="' . APP_URL . '/votre-hote">Jorge Canete</a>, <a href="' . APP_URL . '">La Villa Plaisance</a>' ?>
         </div>
     </footer>
 

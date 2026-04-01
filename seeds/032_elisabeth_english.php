@@ -22,7 +22,7 @@ $id = (int)$itinerary['id'];
 Database::query(
     "UPDATE vp_itineraries SET intro_text = ?, lang = 'en' WHERE id = ?",
     [
-        'Here is the itinerary we have prepared for your last day in Provence. From Châteauneuf-du-Pape to the Pont du Gard, through Uzès — a beautiful loop before heading to Alès. Have a wonderful trip!',
+        'Here is the itinerary I prepared for you for your last day in Provence. From Châteauneuf-du-Pape to the Pont du Gard, through Uzès — a beautiful loop before heading to Alès. Have a wonderful trip!',
         $id,
     ]
 );
