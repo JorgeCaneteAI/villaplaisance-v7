@@ -7,6 +7,14 @@ $dayNamesEn = ['Sunday'=>'Sunday','Monday'=>'Monday','Tuesday'=>'Tuesday','Wedne
 $dayNamesMap = $itLang === 'en' ? $dayNamesEn : $dayNamesFr;
 $dayName = $itinerary['itinerary_date'] ? ($dayNamesMap[date('l', strtotime($itinerary['itinerary_date']))] ?? '') : '';
 
+// Titre dynamique : premier → dernier lieu
+$firstStep = $steps[0]['title'] ?? '';
+$lastStep  = end($steps)['title'] ?? '';
+// Nettoyer les préfixes "Départ de" / "Departure from" / "Arrivée à" / "Arrival in"
+$originClean = preg_replace('/^(Departure from|Départ( de)?)\s*/i', '', $firstStep);
+$destClean   = preg_replace('/^(Arrival in|Arrivée à)\s*/i', '', $lastStep);
+$routeTitle  = $originClean . ' → ' . $destClean;
+
 // Coordonnées pour la carte
 $mapPoints = [];
 $gmapsWaypoints = [];
@@ -17,55 +25,104 @@ foreach ($steps as $s) {
     $gmapsWaypoints[] = urlencode($s['title']);
 }
 $hasMap = count($mapPoints) >= 2;
-
-// Lien Google Maps directions
 $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
+
+// Nombre d'arrêts (sans départ ni arrivée)
+$stopCount = max(0, count($steps) - 2);
 ?>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 
 <style>
 .itinerary-page {
-    max-width: 640px;
+    max-width: 660px;
     margin: 0 auto;
-    padding: 2rem 1.25rem 3rem;
-}
-.itinerary-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid #e8e0d8;
-}
-.itinerary-header h1 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: #2c3e50;
-    margin: 0 0 0.5rem;
-    line-height: 1.3;
-}
-.itinerary-date {
-    font-size: 0.9rem;
-    color: #8B7355;
-    font-weight: 500;
-    margin-bottom: 1rem;
-}
-.itinerary-intro {
-    font-size: 0.95rem;
-    color: #666;
-    line-height: 1.6;
-    font-style: italic;
+    padding: 0 1.25rem 3rem;
 }
 
-/* Carte */
+/* ── Hero ── */
+.itinerary-hero {
+    text-align: center;
+    padding: 2.5rem 1rem 2rem;
+    margin-bottom: 0;
+}
+.itinerary-hero-label {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #8B7355;
+    background: rgba(139,115,85,0.08);
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+}
+.itinerary-hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: #2c3e50;
+    margin: 0 0 0.6rem;
+    line-height: 1.2;
+}
+.itinerary-hero h1 .route-arrow {
+    color: #C5B9A8;
+    font-weight: 300;
+}
+.itinerary-hero-meta {
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 1.2rem;
+}
+.itinerary-hero-meta strong {
+    color: #666;
+    font-weight: 500;
+}
+.itinerary-hero-intro {
+    font-size: 0.92rem;
+    color: #777;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto;
+}
+.itinerary-hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid #eee;
+}
+.itinerary-hero-stat {
+    text-align: center;
+}
+.itinerary-hero-stat-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1;
+}
+.itinerary-hero-stat-label {
+    font-size: 0.7rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+/* ── Carte ── */
 .itinerary-map-wrap {
-    margin-bottom: 1.5rem;
-    border-radius: 12px;
+    margin-bottom: 2rem;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e8e0d8;
 }
 #itinerary-map {
-    height: 280px;
+    height: 300px;
     width: 100%;
 }
 .itinerary-map-actions {
@@ -80,12 +137,12 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.2rem;
     background: #2c3e50;
     color: #fff;
     text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
     font-weight: 500;
     transition: background 0.2s;
 }
@@ -96,15 +153,17 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
     gap: 0.4rem;
     padding: 0.5rem 1rem;
     background: #fff;
-    color: #2c3e50;
+    color: #555;
     border: 1px solid #d0c8be;
     text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.85rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
     cursor: pointer;
+    transition: border-color 0.2s;
 }
+.btn-maps-outline:hover { border-color: #8B7355; }
 
-/* Marker numéroté */
+/* ── Marqueurs carte ── */
 .step-marker {
     background: #8B7355;
     color: #fff;
@@ -120,24 +179,37 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* Timeline */
+/* ── Section titre ── */
+.itinerary-section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #C5B9A8;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0ebe4;
+}
+
+/* ── Timeline ── */
 .itinerary-timeline {
     position: relative;
-    padding-left: 2rem;
+    padding-left: 2.5rem;
+    margin-bottom: 2rem;
 }
 .itinerary-timeline::before {
     content: '';
     position: absolute;
-    left: 6px;
+    left: 9px;
     top: 8px;
     bottom: 8px;
     width: 2px;
-    background: linear-gradient(to bottom, #C5B9A8, #e8e0d8);
+    background: linear-gradient(to bottom, #8B7355 0%, #C5B9A8 40%, #e8e0d8 100%);
 }
 .itinerary-step {
     position: relative;
     margin-bottom: 2rem;
-    padding-bottom: 0.5rem;
 }
 .itinerary-step:last-child {
     margin-bottom: 0;
@@ -145,92 +217,139 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
 .itinerary-step::before {
     content: '';
     position: absolute;
-    left: -2rem;
-    top: 6px;
-    width: 14px;
-    height: 14px;
+    left: -2.5rem;
+    top: 5px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: #fff;
-    border: 3px solid #8B7355;
+    border: 3px solid #C5B9A8;
     z-index: 1;
+    transition: border-color 0.2s;
 }
 .itinerary-step:first-child::before {
     background: #8B7355;
     border-color: #8B7355;
+    box-shadow: 0 0 0 4px rgba(139,115,85,0.15);
 }
 .itinerary-step:last-child::before {
     background: #C5B9A8;
     border-color: #C5B9A8;
+    box-shadow: 0 0 0 4px rgba(197,185,168,0.15);
 }
 .step-time {
-    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
     font-weight: 700;
     color: #8B7355;
-    text-transform: uppercase;
     letter-spacing: 0.03em;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.15rem;
 }
 .step-title {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 0.15rem;
-    line-height: 1.3;
+    line-height: 1.25;
 }
 .step-duration {
-    font-size: 0.78rem;
-    color: #aaa;
+    display: inline-block;
+    font-size: 0.72rem;
+    color: #999;
+    background: rgba(139,115,85,0.06);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
     margin-bottom: 0.4rem;
 }
 .step-desc {
-    font-size: 0.9rem;
-    color: #555;
-    line-height: 1.6;
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.65;
 }
 
-/* Footer */
+/* ── Footer ── */
 .itinerary-footer {
     text-align: center;
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e8e0d8;
-    color: #aaa;
-    font-size: 0.8rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: #fafaf8;
+    border-radius: 12px;
+    border: 1px solid #e8e0d8;
 }
-.itinerary-footer a {
-    color: #8B7355;
+.itinerary-footer-logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+.itinerary-footer-logo a {
+    color: #2c3e50;
     text-decoration: none;
 }
+.itinerary-footer-sub {
+    font-size: 0.75rem;
+    color: #aaa;
+}
 
-/* Mobile */
+/* ── Mobile ── */
 @media (max-width: 480px) {
-    .itinerary-page { padding: 1.5rem 1rem 2rem; }
-    .itinerary-header h1 { font-size: 1.5rem; }
-    .step-title { font-size: 1.1rem; }
-    #itinerary-map { height: 220px; }
+    .itinerary-page { padding: 0 1rem 2rem; }
+    .itinerary-hero { padding: 1.5rem 0.5rem 1.5rem; }
+    .itinerary-hero h1 { font-size: 1.6rem; }
+    .itinerary-hero-stats { gap: 1.5rem; }
+    .step-title { font-size: 1.15rem; }
+    #itinerary-map { height: 240px; }
+    .itinerary-timeline { padding-left: 2.2rem; }
+    .itinerary-step::before { left: -2.2rem; }
 }
 </style>
 
 <div class="itinerary-page">
 
-    <header class="itinerary-header">
-        <h1><?= $itLang === 'en' ? 'Your itinerary' : 'Votre itinéraire' ?>, <?= htmlspecialchars($itinerary['guest_name']) ?></h1>
-        <?php if ($date): ?>
-        <div class="itinerary-date"><?= $dayName ?> <?= $date ?></div>
-        <?php endif; ?>
+    <!-- ═══ Hero ═══ -->
+    <header class="itinerary-hero">
+        <div class="itinerary-hero-label"><?= $itLang === 'en' ? 'Day Trip' : 'Itinéraire du jour' ?></div>
+        <h1><?= htmlspecialchars($originClean) ?> <span class="route-arrow">→</span> <?= htmlspecialchars($destClean) ?></h1>
+        <div class="itinerary-hero-meta">
+            <?php if ($date): ?>
+            <strong><?= $dayName ?> <?= $date ?></strong> ·
+            <?php endif; ?>
+            <?= $itLang === 'en' ? 'Prepared for' : 'Préparé pour' ?> <strong><?= htmlspecialchars($itinerary['guest_name']) ?></strong>
+        </div>
         <?php if (!empty($itinerary['intro_text'])): ?>
-        <p class="itinerary-intro"><?= nl2br(htmlspecialchars($itinerary['intro_text'])) ?></p>
+        <p class="itinerary-hero-intro"><?= nl2br(htmlspecialchars($itinerary['intro_text'])) ?></p>
         <?php endif; ?>
+        <div class="itinerary-hero-stats">
+            <div class="itinerary-hero-stat">
+                <div class="itinerary-hero-stat-value"><?= count($steps) ?></div>
+                <div class="itinerary-hero-stat-label"><?= $itLang === 'en' ? 'stops' : 'étapes' ?></div>
+            </div>
+            <div class="itinerary-hero-stat">
+                <?php
+                $firstTime = $steps[0]['time_label'] ?? '';
+                $lastTime  = end($steps)['time_label'] ?? '';
+                $firstClean = preg_replace('/[^0-9:]/', '', str_replace(['AM','PM','h'], [':00',':00',':'], $firstTime));
+                $lastClean  = preg_replace('/[^0-9:]/', '', str_replace(['AM','PM','h'], [':00',':00',':'], $lastTime));
+                ?>
+                <div class="itinerary-hero-stat-value"><?= htmlspecialchars(trim($firstTime, '~')) ?></div>
+                <div class="itinerary-hero-stat-label"><?= $itLang === 'en' ? 'departure' : 'départ' ?></div>
+            </div>
+            <div class="itinerary-hero-stat">
+                <div class="itinerary-hero-stat-value"><?= htmlspecialchars(trim($lastTime, '~')) ?></div>
+                <div class="itinerary-hero-stat-label"><?= $itLang === 'en' ? 'arrival' : 'arrivée' ?></div>
+            </div>
+        </div>
     </header>
 
-    <!-- Carte -->
+    <!-- ═══ Carte ═══ -->
     <?php if ($hasMap): ?>
     <div class="itinerary-map-wrap">
         <div id="itinerary-map"></div>
         <div class="itinerary-map-actions">
             <a href="<?= htmlspecialchars($gmapsUrl) ?>" target="_blank" rel="noopener" class="btn-maps">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 <?= $itLang === 'en' ? 'Open in Google Maps' : 'Ouvrir dans Google Maps' ?>
             </a>
             <button type="button" class="btn-maps-outline" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($gmapsUrl) ?>').then(()=>this.textContent='<?= $itLang === 'en' ? 'Copied!' : 'Copié !' ?>')">
@@ -240,6 +359,8 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
     </div>
     <?php endif; ?>
 
+    <!-- ═══ Timeline ═══ -->
+    <div class="itinerary-section-title"><?= $itLang === 'en' ? 'Your route, step by step' : 'Votre parcours, étape par étape' ?></div>
     <div class="itinerary-timeline">
         <?php foreach ($steps as $step): ?>
         <div class="itinerary-step">
@@ -257,9 +378,14 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
         <?php endforeach; ?>
     </div>
 
+    <!-- ═══ Footer ═══ -->
     <footer class="itinerary-footer">
-        <?= $itLang === 'en' ? 'Prepared with care by' : 'Préparé avec soin par' ?> <a href="<?= APP_URL ?>">Villa Plaisance</a><br>
-        <?= $itLang === 'en' ? 'B&amp;B &amp; villa — Bédarrides, Provence' : 'Chambres d\'hôtes &amp; villa — Bédarrides, Provence' ?>
+        <div class="itinerary-footer-logo"><a href="<?= APP_URL ?>">Villa Plaisance</a></div>
+        <div class="itinerary-footer-sub">
+            <?= $itLang === 'en'
+                ? 'B&amp;B &amp; villa in Bédarrides, Provence — prepared with care for your stay'
+                : 'Chambres d\'hôtes &amp; villa à Bédarrides, Provence — préparé avec soin pour votre séjour' ?>
+        </div>
     </footer>
 
 </div>
@@ -290,7 +416,6 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
         latlngs.push([p.lat, p.lng]);
     });
 
-    // Tracé de la route
     L.polyline(latlngs, {
         color: '#8B7355',
         weight: 3,
@@ -298,9 +423,8 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
         dashArray: '8, 6'
     }).addTo(map);
 
-    // Ajuster la vue
     var bounds = L.latLngBounds(latlngs);
-    map.fitBounds(bounds, { padding: [30, 30] });
+    map.fitBounds(bounds, { padding: [35, 35] });
 })();
 </script>
 <?php endif; ?>
