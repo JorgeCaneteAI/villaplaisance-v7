@@ -26,6 +26,7 @@
                     <a href="/admin/pieces" class="topbar-dd-link">Chambres</a>
                     <a href="/admin/host" class="topbar-dd-link">Votre hôte</a>
                     <a href="/admin/livret" class="topbar-dd-link">Livret</a>
+                    <a href="/admin/itineraires" class="topbar-dd-link">Itinéraires</a>
                 </div>
             </div>
 

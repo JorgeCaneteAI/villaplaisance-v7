@@ -101,6 +101,12 @@ class Router
             return;
         }
 
+        // Dynamic routes: /itineraire/{slug}
+        if (preg_match('#^/itineraire/([a-z0-9-]+)$#i', $normalized, $m)) {
+            $this->callController('Controllers\\Front\\ItineraryController', 'show', ['slug' => strtolower($m[1])]);
+            return;
+        }
+
         // Dynamic routes: /journal/{slug}
         if (preg_match('#^/journal/([a-z0-9-]+)$#', $normalized, $m)) {
             $this->callController('Controllers\\Front\\JournalController', 'show', ['slug' => $m[1]]);
@@ -167,6 +173,8 @@ class Router
             '/admin/redirects' => ['Controllers\\Admin\\RedirectController', 'index'],
             '/admin/seo-files' => ['Controllers\\Admin\\SeoFileController', 'index'],
             '/admin/host' => ['Controllers\\Admin\\HostController', 'index'],
+            '/admin/itineraires' => ['Controllers\\Admin\\AdminItineraryController', 'index'],
+            '/admin/itineraires/create' => ['Controllers\\Admin\\AdminItineraryController', 'create'],
         ];
 
         $normalized = rtrim($uri, '/');
@@ -396,6 +404,28 @@ class Router
             }
             sort($files);
             echo json_encode($files);
+            return;
+        }
+
+        // Itineraires CRUD
+        if (preg_match('#^/admin/itineraires/(\d+)/edit$#', $normalized, $m)) {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'edit', ['id' => (int)$m[1]]);
+            return;
+        }
+        if ($normalized === '/admin/itineraires/store' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'store');
+            return;
+        }
+        if (preg_match('#^/admin/itineraires/(\d+)/update$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'update', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/itineraires/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+        if (preg_match('#^/admin/itineraires/(\d+)/toggle$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'toggle', ['id' => (int)$m[1]]);
             return;
         }
 
