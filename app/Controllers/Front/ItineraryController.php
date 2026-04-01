@@ -35,18 +35,22 @@ class ItineraryController extends BaseController
             );
         } catch (\Throwable) {}
 
-        // SEO : noindex pour protéger la vie privée des hôtes
+        // SEO — indexable pour du contenu géolocalisé
+        $seoTitle = 'Itinéraire Provence : ' . $itinerary['guest_name'] . ' — Villa Plaisance';
+        $seoDesc  = !empty($itinerary['intro_text'])
+            ? mb_substr($itinerary['intro_text'], 0, 160)
+            : 'Itinéraire de visite en Provence préparé par Villa Plaisance, chambres d\'hôtes à Bédarrides.';
+
         $seo = [
-            'title' => 'Votre itinéraire — Villa Plaisance',
-            'description' => 'Itinéraire personnalisé préparé par Villa Plaisance pour votre séjour en Provence.',
+            'title' => $seoTitle,
+            'description' => $seoDesc,
             'canonical' => APP_URL . '/itineraire/' . $slug,
-            'robots' => 'noindex, nofollow',
             'og' => [
-                'title' => 'Votre itinéraire — Villa Plaisance',
-                'description' => 'Itinéraire personnalisé pour votre séjour en Provence.',
+                'title' => $seoTitle,
+                'description' => $seoDesc,
                 'image' => APP_URL . '/assets/img/og-default.webp',
                 'url' => APP_URL . '/itineraire/' . $slug,
-                'type' => 'website',
+                'type' => 'article',
                 'locale' => \SeoService::locale($lang),
             ],
             'hreflang' => [],
