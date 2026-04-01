@@ -434,6 +434,10 @@ class Router
             $this->callController('Controllers\\Admin\\AdminItineraryController', 'toggle', ['id' => (int)$m[1]]);
             return;
         }
+        if (preg_match('#^/admin/itineraires/comment/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Admin\\AdminItineraryController', 'deleteComment', ['id' => (int)$m[1]]);
+            return;
+        }
 
         // Sections (CMS blocks)
         if (preg_match('#^/admin/sections/(\d+)/edit$#', $normalized, $m)) {

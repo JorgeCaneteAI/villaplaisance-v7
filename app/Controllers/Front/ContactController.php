@@ -60,6 +60,13 @@ class ContactController extends BaseController
         $subject = strip_tags(trim($_POST['subject'] ?? ''));
         $message = strip_tags(trim($_POST['message'] ?? ''));
 
+        // Anti-spam : bloquer les messages contenant des URLs
+        if (preg_match('#https?://#i', $message) || preg_match('#https?://#i', $subject) || preg_match('#https?://#i', $name)) {
+            $this->flash('error', 'Les liens ne sont pas autorisés dans le formulaire de contact.');
+            $this->redirect(\LangService::url('contact'));
+            return;
+        }
+
         if ($name === '' || $email === '' || $message === '') {
             $this->flash('error', 'Veuillez remplir tous les champs obligatoires.');
             $this->redirect(\LangService::url('contact'));

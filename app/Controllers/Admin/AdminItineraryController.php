@@ -161,6 +161,26 @@ class AdminItineraryController extends AdminBaseController
         $this->redirect('/admin/itineraires');
     }
 
+    public function deleteComment(int $id): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect('/admin/itineraires');
+            return;
+        }
+
+        $comment = \Database::fetchOne("SELECT itinerary_id FROM vp_itinerary_comments WHERE id = ?", [$id]);
+        if ($comment) {
+            \Database::query("DELETE FROM vp_itinerary_comments WHERE id = ?", [$id]);
+            $this->flash('success', 'Commentaire supprimé.');
+            $this->redirect('/admin/itineraires/' . $comment['itinerary_id'] . '/edit');
+            return;
+        }
+
+        $this->flash('error', 'Commentaire introuvable.');
+        $this->redirect('/admin/itineraires');
+    }
+
     private function saveSteps(int $itineraryId): void
     {
         $times        = $_POST['step_time'] ?? [];

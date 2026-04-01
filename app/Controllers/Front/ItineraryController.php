@@ -97,6 +97,12 @@ class ItineraryController extends BaseController
         $name    = strip_tags(trim($_POST['guest_name'] ?? ''));
         $message = strip_tags(trim($_POST['message'] ?? ''));
 
+        // Anti-spam : bloquer les URLs
+        if (preg_match('#https?://#i', $message) || preg_match('#https?://#i', $name)) {
+            header('Location: /itineraire/' . $slug . '#comments');
+            exit;
+        }
+
         if ($name !== '' && $message !== '') {
             \Database::insert('vp_itinerary_comments', [
                 'itinerary_id' => $itinerary['id'],
