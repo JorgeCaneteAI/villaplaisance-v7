@@ -3,7 +3,23 @@ declare(strict_types=1);
 $date = $itinerary['itinerary_date'] ? date('d/m/Y', strtotime($itinerary['itinerary_date'])) : '';
 $dayNames = ['Sunday'=>'Dimanche','Monday'=>'Lundi','Tuesday'=>'Mardi','Wednesday'=>'Mercredi','Thursday'=>'Jeudi','Friday'=>'Vendredi','Saturday'=>'Samedi'];
 $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itinerary['itinerary_date']))] ?? '') : '';
+
+// Coordonnées pour la carte
+$mapPoints = [];
+$gmapsWaypoints = [];
+foreach ($steps as $s) {
+    if (!empty($s['lat']) && !empty($s['lng'])) {
+        $mapPoints[] = ['lat' => (float)$s['lat'], 'lng' => (float)$s['lng'], 'title' => $s['title'], 'time' => $s['time_label'] ?? ''];
+    }
+    $gmapsWaypoints[] = urlencode($s['title']);
+}
+$hasMap = count($mapPoints) >= 2;
+
+// Lien Google Maps directions
+$gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
 ?>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 
 <style>
 .itinerary-page {
@@ -13,7 +29,7 @@ $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itiner
 }
 .itinerary-header {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid #e8e0d8;
 }
@@ -36,6 +52,69 @@ $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itiner
     color: #666;
     line-height: 1.6;
     font-style: italic;
+}
+
+/* Carte */
+.itinerary-map-wrap {
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+#itinerary-map {
+    height: 280px;
+    width: 100%;
+}
+.itinerary-map-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 0.75rem;
+    background: #fafaf8;
+    border-top: 1px solid #e8e0d8;
+}
+.btn-maps {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: #2c3e50;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+.btn-maps:hover { background: #1a252f; }
+.btn-maps-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: #fff;
+    color: #2c3e50;
+    border: 1px solid #d0c8be;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* Marker numéroté */
+.step-marker {
+    background: #8B7355;
+    color: #fff;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 /* Timeline */
@@ -126,6 +205,7 @@ $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itiner
     .itinerary-page { padding: 1.5rem 1rem 2rem; }
     .itinerary-header h1 { font-size: 1.5rem; }
     .step-title { font-size: 1.1rem; }
+    #itinerary-map { height: 220px; }
 }
 </style>
 
@@ -140,6 +220,22 @@ $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itiner
         <p class="itinerary-intro"><?= nl2br(htmlspecialchars($itinerary['intro_text'])) ?></p>
         <?php endif; ?>
     </header>
+
+    <!-- Carte -->
+    <?php if ($hasMap): ?>
+    <div class="itinerary-map-wrap">
+        <div id="itinerary-map"></div>
+        <div class="itinerary-map-actions">
+            <a href="<?= htmlspecialchars($gmapsUrl) ?>" target="_blank" rel="noopener" class="btn-maps">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Ouvrir dans Google Maps
+            </a>
+            <button type="button" class="btn-maps-outline" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($gmapsUrl) ?>').then(()=>this.textContent='Copié !')">
+                Copier le lien
+            </button>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="itinerary-timeline">
         <?php foreach ($steps as $step): ?>
@@ -164,3 +260,44 @@ $dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itiner
     </footer>
 
 </div>
+
+<?php if ($hasMap): ?>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+(function() {
+    var points = <?= json_encode($mapPoints, JSON_UNESCAPED_UNICODE) ?>;
+    var map = L.map('itinerary-map', { scrollWheelZoom: false, attributionControl: true });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    var latlngs = [];
+    points.forEach(function(p, i) {
+        var icon = L.divIcon({
+            className: '',
+            html: '<div class="step-marker">' + (i + 1) + '</div>',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14]
+        });
+        var label = (p.time ? p.time + ' — ' : '') + p.title;
+        L.marker([p.lat, p.lng], { icon: icon })
+            .bindPopup('<strong>' + label + '</strong>')
+            .addTo(map);
+        latlngs.push([p.lat, p.lng]);
+    });
+
+    // Tracé de la route
+    L.polyline(latlngs, {
+        color: '#8B7355',
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '8, 6'
+    }).addTo(map);
+
+    // Ajuster la vue
+    var bounds = L.latLngBounds(latlngs);
+    map.fitBounds(bounds, { padding: [30, 30] });
+})();
+</script>
+<?php endif; ?>
