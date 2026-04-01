@@ -369,7 +369,7 @@ $stopCount = max(0, count($steps) - 2);
 /* ── Mobile ── */
 @media (max-width: 480px) {
     .itinerary-page { padding: 0 1rem 2rem; }
-    .itinerary-hero { padding: 1.5rem 0.5rem 1.5rem; }
+    .itinerary-hero { padding: 4rem 0.5rem 1.5rem; }
     .itinerary-hero h1 { font-size: 1.6rem; }
     .itinerary-hero-stats { gap: 1.5rem; }
     .step-title { font-size: 1.15rem; }
