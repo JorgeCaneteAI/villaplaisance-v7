@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 $date = $itinerary['itinerary_date'] ? date('d/m/Y', strtotime($itinerary['itinerary_date'])) : '';
-$dayNames = ['Sunday'=>'Dimanche','Monday'=>'Lundi','Tuesday'=>'Mardi','Wednesday'=>'Mercredi','Thursday'=>'Jeudi','Friday'=>'Vendredi','Saturday'=>'Samedi'];
-$dayName = $itinerary['itinerary_date'] ? ($dayNames[date('l', strtotime($itinerary['itinerary_date']))] ?? '') : '';
+$itLang = $itinerary['lang'] ?? 'fr';
+$dayNamesFr = ['Sunday'=>'Dimanche','Monday'=>'Lundi','Tuesday'=>'Mardi','Wednesday'=>'Mercredi','Thursday'=>'Jeudi','Friday'=>'Vendredi','Saturday'=>'Samedi'];
+$dayNamesEn = ['Sunday'=>'Sunday','Monday'=>'Monday','Tuesday'=>'Tuesday','Wednesday'=>'Wednesday','Thursday'=>'Thursday','Friday'=>'Friday','Saturday'=>'Saturday'];
+$dayNamesMap = $itLang === 'en' ? $dayNamesEn : $dayNamesFr;
+$dayName = $itinerary['itinerary_date'] ? ($dayNamesMap[date('l', strtotime($itinerary['itinerary_date']))] ?? '') : '';
 
 // Coordonnées pour la carte
 $mapPoints = [];
@@ -212,7 +215,7 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
 <div class="itinerary-page">
 
     <header class="itinerary-header">
-        <h1>Votre itinéraire, <?= htmlspecialchars($itinerary['guest_name']) ?></h1>
+        <h1><?= $itLang === 'en' ? 'Your itinerary' : 'Votre itinéraire' ?>, <?= htmlspecialchars($itinerary['guest_name']) ?></h1>
         <?php if ($date): ?>
         <div class="itinerary-date"><?= $dayName ?> <?= $date ?></div>
         <?php endif; ?>
@@ -228,10 +231,10 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
         <div class="itinerary-map-actions">
             <a href="<?= htmlspecialchars($gmapsUrl) ?>" target="_blank" rel="noopener" class="btn-maps">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Ouvrir dans Google Maps
+                <?= $itLang === 'en' ? 'Open in Google Maps' : 'Ouvrir dans Google Maps' ?>
             </a>
-            <button type="button" class="btn-maps-outline" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($gmapsUrl) ?>').then(()=>this.textContent='Copié !')">
-                Copier le lien
+            <button type="button" class="btn-maps-outline" onclick="navigator.clipboard.writeText('<?= htmlspecialchars($gmapsUrl) ?>').then(()=>this.textContent='<?= $itLang === 'en' ? 'Copied!' : 'Copié !' ?>')">
+                <?= $itLang === 'en' ? 'Copy link' : 'Copier le lien' ?>
             </button>
         </div>
     </div>
@@ -255,8 +258,8 @@ $gmapsUrl = 'https://www.google.com/maps/dir/' . implode('/', $gmapsWaypoints);
     </div>
 
     <footer class="itinerary-footer">
-        Préparé avec soin par <a href="<?= APP_URL ?>">Villa Plaisance</a><br>
-        Chambres d'hôtes &amp; villa — Bédarrides, Provence
+        <?= $itLang === 'en' ? 'Prepared with care by' : 'Préparé avec soin par' ?> <a href="<?= APP_URL ?>">Villa Plaisance</a><br>
+        <?= $itLang === 'en' ? 'B&amp;B &amp; villa — Bédarrides, Provence' : 'Chambres d\'hôtes &amp; villa — Bédarrides, Provence' ?>
     </footer>
 
 </div>
