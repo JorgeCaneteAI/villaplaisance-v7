@@ -57,4 +57,26 @@ class BaseController
         unset($_SESSION['flash']);
         return $flash;
     }
+
+    /**
+     * Rate limiting par IP + action.
+     * Retourne true si OK, false si trop de tentatives.
+     */
+    protected function checkRateLimit(string $action, int $maxAttempts = 5, int $windowSeconds = 3600): bool
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $key = 'rate_' . $action . '_' . md5($ip);
+
+        if (!isset($_SESSION[$key])) {
+            $_SESSION[$key] = ['count' => 0, 'reset_at' => time() + $windowSeconds];
+        }
+
+        // Fenêtre expirée → reset
+        if (time() > $_SESSION[$key]['reset_at']) {
+            $_SESSION[$key] = ['count' => 0, 'reset_at' => time() + $windowSeconds];
+        }
+
+        $_SESSION[$key]['count']++;
+        return $_SESSION[$key]['count'] <= $maxAttempts;
+    }
 }

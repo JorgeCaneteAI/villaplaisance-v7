@@ -82,8 +82,20 @@ class ItineraryController extends BaseController
             exit;
         }
 
-        $name    = trim($_POST['guest_name'] ?? '');
-        $message = trim($_POST['message'] ?? '');
+        // Honeypot
+        if (!empty($_POST['website'])) {
+            header('Location: /itineraire/' . $slug . '#comments');
+            exit;
+        }
+
+        // Rate limiting : 3 commentaires max par heure
+        if (!$this->checkRateLimit('itinerary_comment', 3, 3600)) {
+            header('Location: /itineraire/' . $slug . '#comments');
+            exit;
+        }
+
+        $name    = strip_tags(trim($_POST['guest_name'] ?? ''));
+        $message = strip_tags(trim($_POST['message'] ?? ''));
 
         if ($name !== '' && $message !== '') {
             \Database::insert('vp_itinerary_comments', [

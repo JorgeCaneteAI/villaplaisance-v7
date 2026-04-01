@@ -42,16 +42,23 @@ class ContactController extends BaseController
             return;
         }
 
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $subject = trim($_POST['subject'] ?? '');
-        $message = trim($_POST['message'] ?? '');
-
         // Honeypot
         if (!empty($_POST['website'])) {
             $this->redirect(\LangService::url('contact'));
             return;
         }
+
+        // Rate limiting : 5 messages max par heure
+        if (!$this->checkRateLimit('contact', 5, 3600)) {
+            $this->flash('error', 'Trop de messages envoyés. Réessayez plus tard.');
+            $this->redirect(\LangService::url('contact'));
+            return;
+        }
+
+        $name    = strip_tags(trim($_POST['name'] ?? ''));
+        $email   = trim($_POST['email'] ?? '');
+        $subject = strip_tags(trim($_POST['subject'] ?? ''));
+        $message = strip_tags(trim($_POST['message'] ?? ''));
 
         if ($name === '' || $email === '' || $message === '') {
             $this->flash('error', 'Veuillez remplir tous les champs obligatoires.');

@@ -475,7 +475,10 @@ $stopCount = max(0, count($steps) - 2);
         <?php endif; ?>
 
         <form class="comment-form" method="post" action="/itineraire/<?= htmlspecialchars($itinerary['slug']) ?>/comment">
-            <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+            <div style="position:absolute;left:-9999px" aria-hidden="true">
+                <input type="text" name="website" tabindex="-1" autocomplete="off">
+            </div>
             <input type="text" name="guest_name" placeholder="<?= $itLang === 'en' ? 'Your name' : 'Votre nom' ?>" required>
             <textarea name="message" placeholder="<?= $itLang === 'en' ? 'Leave a comment or a thank you note...' : 'Laissez un commentaire ou un mot de remerciement...' ?>" required></textarea>
             <button type="submit"><?= $itLang === 'en' ? 'Send' : 'Envoyer' ?></button>
