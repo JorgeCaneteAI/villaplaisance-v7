@@ -101,6 +101,12 @@ class Router
             return;
         }
 
+        // Dynamic routes: /itineraire/{slug}/comment (POST)
+        if (preg_match('#^/itineraire/([a-z0-9-]+)/comment$#i', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->callController('Controllers\\Front\\ItineraryController', 'comment', ['slug' => strtolower($m[1])]);
+            return;
+        }
+
         // Dynamic routes: /itineraire/{slug}
         if (preg_match('#^/itineraire/([a-z0-9-]+)$#i', $normalized, $m)) {
             $this->callController('Controllers\\Front\\ItineraryController', 'show', ['slug' => strtolower($m[1])]);

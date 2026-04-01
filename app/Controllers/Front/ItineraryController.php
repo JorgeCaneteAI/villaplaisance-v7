@@ -35,7 +35,15 @@ class ItineraryController extends BaseController
             );
         } catch (\Throwable) {}
 
-        // SEO — indexable pour du contenu géolocalisé
+        $comments = [];
+        try {
+            $comments = \Database::fetchAll(
+                "SELECT * FROM vp_itinerary_comments WHERE itinerary_id = ? ORDER BY created_at ASC",
+                [$itinerary['id']]
+            );
+        } catch (\Throwable) {}
+
+        // SEO
         $seoTitle = 'Itinéraire Provence : ' . $itinerary['guest_name'] . ' — Villa Plaisance';
         $seoDesc  = !empty($itinerary['intro_text'])
             ? mb_substr($itinerary['intro_text'], 0, 160)
@@ -57,7 +65,35 @@ class ItineraryController extends BaseController
         ];
 
         $jsonLd = [];
+        $csrf = $this->csrf();
 
-        $this->render('front/itinerary', compact('seo', 'itinerary', 'steps', 'jsonLd', 'lang'));
+        $this->render('front/itinerary', compact('seo', 'itinerary', 'steps', 'comments', 'jsonLd', 'lang', 'csrf'));
+    }
+
+    public function comment(string $slug): void
+    {
+        $itinerary = \Database::fetchOne(
+            "SELECT * FROM vp_itineraries WHERE slug = ? AND status = 'active'",
+            [$slug]
+        );
+
+        if (!$itinerary || !$this->verifyCsrf()) {
+            header('Location: /itineraire/' . $slug);
+            exit;
+        }
+
+        $name    = trim($_POST['guest_name'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+
+        if ($name !== '' && $message !== '') {
+            \Database::insert('vp_itinerary_comments', [
+                'itinerary_id' => $itinerary['id'],
+                'guest_name'   => mb_substr($name, 0, 200),
+                'message'      => mb_substr($message, 0, 2000),
+            ]);
+        }
+
+        header('Location: /itineraire/' . $slug . '#comments');
+        exit;
     }
 }

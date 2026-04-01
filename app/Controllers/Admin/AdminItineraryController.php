@@ -43,8 +43,15 @@ class AdminItineraryController extends AdminBaseController
             "SELECT * FROM vp_itinerary_steps WHERE itinerary_id = ? ORDER BY position ASC",
             [$id]
         );
+        $comments = [];
+        try {
+            $comments = \Database::fetchAll(
+                "SELECT * FROM vp_itinerary_comments WHERE itinerary_id = ? ORDER BY created_at DESC",
+                [$id]
+            );
+        } catch (\Throwable) {}
         $csrf = $this->csrf();
-        $this->render('admin/itineraries/form', compact('itinerary', 'steps', 'csrf'));
+        $this->render('admin/itineraries/form', compact('itinerary', 'steps', 'comments', 'csrf'));
     }
 
     public function store(): void
@@ -78,6 +85,7 @@ class AdminItineraryController extends AdminBaseController
             'intro_text'     => trim($_POST['intro_text'] ?? ''),
             'itinerary_date' => $_POST['itinerary_date'] ?: null,
             'status'         => $_POST['status'] ?? 'active',
+            'lang'           => $_POST['lang'] ?? 'fr',
         ]);
 
         $itineraryId = (int)\Database::fetchOne("SELECT id FROM vp_itineraries WHERE slug = ?", [$slug])['id'];
@@ -114,8 +122,8 @@ class AdminItineraryController extends AdminBaseController
         }
 
         \Database::query(
-            "UPDATE vp_itineraries SET slug = ?, guest_name = ?, intro_text = ?, itinerary_date = ?, status = ? WHERE id = ?",
-            [$slug, trim($_POST['guest_name']), trim($_POST['intro_text'] ?? ''), $_POST['itinerary_date'] ?: null, $_POST['status'] ?? 'active', $id]
+            "UPDATE vp_itineraries SET slug = ?, guest_name = ?, intro_text = ?, itinerary_date = ?, status = ?, lang = ? WHERE id = ?",
+            [$slug, trim($_POST['guest_name']), trim($_POST['intro_text'] ?? ''), $_POST['itinerary_date'] ?: null, $_POST['status'] ?? 'active', $_POST['lang'] ?? 'fr', $id]
         );
 
         \Database::query("DELETE FROM vp_itinerary_steps WHERE itinerary_id = ?", [$id]);
@@ -159,18 +167,24 @@ class AdminItineraryController extends AdminBaseController
         $titles       = $_POST['step_title'] ?? [];
         $durations    = $_POST['step_duration'] ?? [];
         $descriptions = $_POST['step_description'] ?? [];
+        $images       = $_POST['step_image'] ?? [];
 
         foreach ($titles as $i => $title) {
             $title = trim($title);
             if ($title === '') continue;
-            \Database::insert('vp_itinerary_steps', [
+            $data = [
                 'itinerary_id' => $itineraryId,
                 'time_label'   => trim($times[$i] ?? ''),
                 'title'        => $title,
                 'duration'     => trim($durations[$i] ?? ''),
                 'description'  => trim($descriptions[$i] ?? ''),
                 'position'     => $i + 1,
-            ]);
+            ];
+            $img = trim($images[$i] ?? '');
+            if ($img !== '') {
+                $data['image'] = $img;
+            }
+            \Database::insert('vp_itinerary_steps', $data);
         }
     }
 }

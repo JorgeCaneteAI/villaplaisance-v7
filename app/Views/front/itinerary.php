@@ -267,6 +267,75 @@ $stopCount = max(0, count($steps) - 2);
     color: #666;
     line-height: 1.65;
 }
+.step-image {
+    margin-top: 0.6rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.step-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ── Commentaires ── */
+.itinerary-comments {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+}
+.comment-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0ebe4;
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-author {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #2c3e50;
+}
+.comment-date {
+    font-size: 0.72rem;
+    color: #bbb;
+    margin-left: 0.5rem;
+}
+.comment-text {
+    font-size: 0.88rem;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 0.25rem;
+}
+.comment-form {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: #fafaf8;
+    border-radius: 10px;
+    border: 1px solid #e8e0d8;
+}
+.comment-form input,
+.comment-form textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #d0c8be;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    margin-bottom: 0.75rem;
+    box-sizing: border-box;
+}
+.comment-form textarea { resize: vertical; min-height: 80px; }
+.comment-form button {
+    background: #8B7355;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.comment-form button:hover { background: #7a6448; }
 
 /* ── Footer ── */
 .itinerary-footer {
@@ -378,8 +447,35 @@ $stopCount = max(0, count($steps) - 2);
             <?php if (!empty($step['description'])): ?>
             <p class="step-desc"><?= nl2br(htmlspecialchars($step['description'])) ?></p>
             <?php endif; ?>
+            <?php if (!empty($step['image'])): ?>
+            <div class="step-image">
+                <?= \ImageService::img($step['image'], htmlspecialchars($step['title']), 600, 300) ?>
+            </div>
+            <?php endif; ?>
         </div>
         <?php endforeach; ?>
+    </div>
+
+    <!-- ═══ Commentaires ═══ -->
+    <div class="itinerary-comments" id="comments">
+        <div class="itinerary-section-title"><?= $itLang === 'en' ? 'Guest comments' : 'Commentaires' ?></div>
+
+        <?php if (!empty($comments)): ?>
+        <?php foreach ($comments as $c): ?>
+        <div class="comment-item">
+            <span class="comment-author"><?= htmlspecialchars($c['guest_name']) ?></span>
+            <span class="comment-date"><?= date('d/m/Y', strtotime($c['created_at'])) ?></span>
+            <p class="comment-text"><?= nl2br(htmlspecialchars($c['message'])) ?></p>
+        </div>
+        <?php endforeach; ?>
+        <?php endif; ?>
+
+        <form class="comment-form" method="post" action="/itineraire/<?= htmlspecialchars($itinerary['slug']) ?>/comment">
+            <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+            <input type="text" name="guest_name" placeholder="<?= $itLang === 'en' ? 'Your name' : 'Votre nom' ?>" required>
+            <textarea name="message" placeholder="<?= $itLang === 'en' ? 'Leave a comment or a thank you note...' : 'Laissez un commentaire ou un mot de remerciement...' ?>" required></textarea>
+            <button type="submit"><?= $itLang === 'en' ? 'Send' : 'Envoyer' ?></button>
+        </form>
     </div>
 
     <!-- ═══ Footer ═══ -->

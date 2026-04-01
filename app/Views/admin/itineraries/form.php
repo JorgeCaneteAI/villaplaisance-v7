@@ -13,7 +13,7 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
 <div class="alert alert-error"><?= htmlspecialchars($flash['error']) ?></div>
 <?php endif; ?>
 
-<form method="post" action="<?= $action ?>" id="itinerary-form">
+<form method="post" action="<?= $action ?>" id="itinerary-form" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
 
     <!-- Infos générales -->
@@ -38,17 +38,27 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
                        value="<?= htmlspecialchars($itinerary['itinerary_date'] ?? '') ?>" class="form-input">
             </div>
         </div>
-        <div style="margin-bottom:1rem">
-            <label for="intro_text" style="font-weight:600;font-size:0.85rem">Message personnalisé</label>
-            <textarea id="intro_text" name="intro_text" rows="3" class="form-input"
-                      placeholder="Voici l'itinéraire que nous avons préparé pour votre dernière journée..."><?= htmlspecialchars($itinerary['intro_text'] ?? '') ?></textarea>
-        </div>
-        <div>
-            <label style="font-weight:600;font-size:0.85rem">Statut</label>
-            <select name="status" class="form-input" style="width:auto">
-                <option value="active" <?= ($itinerary['status'] ?? '') === 'active' ? 'selected' : '' ?>>Actif</option>
-                <option value="archived" <?= ($itinerary['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archivé</option>
-            </select>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;margin-bottom:1rem">
+            <div>
+                <label for="intro_text" style="font-weight:600;font-size:0.85rem">Message personnalisé</label>
+                <textarea id="intro_text" name="intro_text" rows="3" class="form-input"
+                          placeholder="Voici l'itinéraire que nous avons préparé pour votre dernière journée..."><?= htmlspecialchars($itinerary['intro_text'] ?? '') ?></textarea>
+            </div>
+            <div>
+                <label style="font-weight:600;font-size:0.85rem">Langue</label>
+                <select name="lang" class="form-input" style="width:auto">
+                    <option value="fr" <?= ($itinerary['lang'] ?? 'fr') === 'fr' ? 'selected' : '' ?>>Français</option>
+                    <option value="en" <?= ($itinerary['lang'] ?? '') === 'en' ? 'selected' : '' ?>>English</option>
+                    <option value="es" <?= ($itinerary['lang'] ?? '') === 'es' ? 'selected' : '' ?>>Español</option>
+                </select>
+                <div style="margin-top:0.5rem">
+                    <label style="font-weight:600;font-size:0.85rem">Statut</label>
+                    <select name="status" class="form-input" style="width:auto">
+                        <option value="active" <?= ($itinerary['status'] ?? '') === 'active' ? 'selected' : '' ?>>Actif</option>
+                        <option value="archived" <?= ($itinerary['status'] ?? '') === 'archived' ? 'selected' : '' ?>>Archivé</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -80,15 +90,43 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
                             <button type="button" onclick="this.closest('.step-row').remove()" class="btn-danger" style="font-size:0.75rem;padding:0.25rem 0.5rem">✕</button>
                         </div>
                     </div>
-                    <div style="margin-top:0.5rem">
-                        <label style="font-size:0.72rem;color:#888">Description</label>
-                        <textarea name="step_description[]" rows="2" class="form-input" placeholder="Détails, horaires, conseils..." style="font-size:0.85rem"><?= htmlspecialchars($step['description'] ?? '') ?></textarea>
+                    <div style="display:grid;grid-template-columns:1fr 200px;gap:0.75rem;margin-top:0.5rem">
+                        <div>
+                            <label style="font-size:0.72rem;color:#888">Description</label>
+                            <textarea name="step_description[]" rows="2" class="form-input" placeholder="Détails, horaires, conseils..." style="font-size:0.85rem"><?= htmlspecialchars($step['description'] ?? '') ?></textarea>
+                        </div>
+                        <div>
+                            <label style="font-size:0.72rem;color:#888">Image</label>
+                            <div style="display:flex;gap:0.5rem;align-items:start">
+                                <input type="text" name="step_image[]" value="<?= htmlspecialchars($step['image'] ?? '') ?>" class="form-input step-image-input" placeholder="photo.webp" style="font-size:0.8rem">
+                                <button type="button" onclick="openMediaPicker(this)" class="btn-secondary" style="font-size:0.75rem;padding:0.35rem 0.5rem;white-space:nowrap">Choisir</button>
+                            </div>
+                            <?php if (!empty($step['image'])): ?>
+                            <img src="/uploads/<?= htmlspecialchars($step['image']) ?>" alt="" style="max-width:100%;max-height:80px;margin-top:0.3rem;border-radius:4px;object-fit:cover">
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Commentaires existants -->
+    <?php if ($isEdit && !empty($comments)): ?>
+    <div class="admin-card" style="margin-bottom:1rem">
+        <h2>Commentaires reçus (<?= count($comments) ?>)</h2>
+        <?php foreach ($comments as $c): ?>
+        <div style="border:1px solid #e8e0d8;border-radius:8px;padding:0.75rem;margin-bottom:0.5rem;background:#fafaf8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem">
+                <strong style="font-size:0.85rem"><?= htmlspecialchars($c['guest_name']) ?></strong>
+                <span style="font-size:0.72rem;color:#aaa"><?= date('d/m/Y H:i', strtotime($c['created_at'])) ?></span>
+            </div>
+            <p style="font-size:0.85rem;color:#555;margin:0"><?= nl2br(htmlspecialchars($c['message'])) ?></p>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <div style="display:flex;gap:1rem;justify-content:flex-end">
         <a href="/admin/itineraires" class="btn-secondary">Annuler</a>
@@ -115,12 +153,32 @@ $title  = $isEdit ? 'Modifier l\'itinéraire' : 'Nouvel itinéraire';
                 <button type="button" onclick="this.closest('.step-row').remove()" class="btn-danger" style="font-size:0.75rem;padding:0.25rem 0.5rem">✕</button>
             </div>
         </div>
-        <div style="margin-top:0.5rem">
-            <label style="font-size:0.72rem;color:#888">Description</label>
-            <textarea name="step_description[]" rows="2" class="form-input" placeholder="Détails, horaires, conseils..." style="font-size:0.85rem"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 200px;gap:0.75rem;margin-top:0.5rem">
+            <div>
+                <label style="font-size:0.72rem;color:#888">Description</label>
+                <textarea name="step_description[]" rows="2" class="form-input" placeholder="Détails, horaires, conseils..." style="font-size:0.85rem"></textarea>
+            </div>
+            <div>
+                <label style="font-size:0.72rem;color:#888">Image</label>
+                <div style="display:flex;gap:0.5rem;align-items:start">
+                    <input type="text" name="step_image[]" value="" class="form-input step-image-input" placeholder="photo.webp" style="font-size:0.8rem">
+                    <button type="button" onclick="openMediaPicker(this)" class="btn-secondary" style="font-size:0.75rem;padding:0.35rem 0.5rem;white-space:nowrap">Choisir</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
+
+<!-- Media picker modal -->
+<div id="media-picker-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;max-width:700px;width:95%;max-height:80vh;overflow:auto;padding:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <h3 style="margin:0">Choisir une image</h3>
+            <button type="button" onclick="closeMediaPicker()" style="border:none;background:none;font-size:1.5rem;cursor:pointer">&times;</button>
+        </div>
+        <div id="media-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.5rem"></div>
+    </div>
+</div>
 
 <script>
 function addStep() {
@@ -143,5 +201,47 @@ document.getElementById('guest_name').addEventListener('input', function() {
 document.getElementById('slug').addEventListener('input', function() {
     this.dataset.manual = '1';
     document.getElementById('slug-preview').textContent = this.value || '...';
+});
+
+// Media picker
+let activeImageInput = null;
+
+function openMediaPicker(btn) {
+    activeImageInput = btn.closest('.step-row').querySelector('.step-image-input');
+    const modal = document.getElementById('media-picker-modal');
+    const grid = document.getElementById('media-picker-grid');
+    modal.style.display = 'flex';
+    grid.innerHTML = '<p style="color:#888;grid-column:1/-1;text-align:center">Chargement...</p>';
+
+    fetch('/admin/api/media-list')
+        .then(r => r.json())
+        .then(files => {
+            grid.innerHTML = '';
+            if (!files.length) {
+                grid.innerHTML = '<p style="color:#888;grid-column:1/-1;text-align:center">Aucune image dans /uploads</p>';
+                return;
+            }
+            files.forEach(f => {
+                const div = document.createElement('div');
+                div.style.cssText = 'cursor:pointer;border:2px solid transparent;border-radius:6px;overflow:hidden;transition:border-color 0.15s';
+                div.innerHTML = '<img src="/uploads/' + f + '" alt="" style="width:100%;height:90px;object-fit:cover;display:block">'
+                    + '<div style="font-size:0.7rem;padding:0.2rem 0.3rem;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + f + '</div>';
+                div.onmouseover = () => div.style.borderColor = '#8B7355';
+                div.onmouseout  = () => div.style.borderColor = 'transparent';
+                div.onclick = () => {
+                    activeImageInput.value = f;
+                    closeMediaPicker();
+                };
+                grid.appendChild(div);
+            });
+        });
+}
+
+function closeMediaPicker() {
+    document.getElementById('media-picker-modal').style.display = 'none';
+}
+
+document.getElementById('media-picker-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeMediaPicker();
 });
 </script>
