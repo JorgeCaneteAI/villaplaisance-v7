@@ -383,8 +383,8 @@ $stopCount = max(0, count($steps) - 2);
         <div class="itinerary-footer-logo"><a href="<?= APP_URL ?>">Villa Plaisance</a></div>
         <div class="itinerary-footer-sub">
             <?= $itLang === 'en'
-                ? 'B&amp;B &amp; villa in Bédarrides, Provence — prepared with care for your stay'
-                : 'Chambres d\'hôtes &amp; villa à Bédarrides, Provence — préparé avec soin pour votre séjour' ?>
+                ? 'Prepared with care by Jorge Canete from <a href="' . APP_URL . '">La Villa Plaisance</a>'
+                : 'Préparé avec soin par Jorge Canete, <a href="' . APP_URL . '">La Villa Plaisance</a>' ?>
         </div>
     </footer>
 
