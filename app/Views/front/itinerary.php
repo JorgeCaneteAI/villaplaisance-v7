@@ -43,7 +43,7 @@ $stopCount = max(0, count($steps) - 2);
 /* ── Hero ── */
 .itinerary-hero {
     text-align: left;
-    padding: 3.5rem 0 2rem;
+    padding: 5rem 0 2rem;
     margin-bottom: 0;
 }
 .itinerary-hero-label {
