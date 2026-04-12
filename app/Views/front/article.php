@@ -61,7 +61,15 @@
                         <?php elseif (($block['type'] ?? '') === 'list'): ?>
                             <ul>
                                 <?php foreach (($block['items'] ?? []) as $item): ?>
-                                <li><?= htmlspecialchars($item) ?></li>
+                                <li><?php
+                                    $safe = htmlspecialchars($item);
+                                    if (str_contains($safe, ' : ')) {
+                                        [$label, $rest] = explode(' : ', $safe, 2);
+                                        echo '<strong>' . $label . '</strong> : ' . $rest;
+                                    } else {
+                                        echo $safe;
+                                    }
+                                ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         <?php endif; ?>
