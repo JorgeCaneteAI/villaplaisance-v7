@@ -1231,6 +1231,8 @@ h3 {
 .article-cover { margin-bottom: var(--space-12); }
 .article-cover img { width: 100%; }
 .article-full h1 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; letter-spacing: -0.03em; }
+.article-content a { color: var(--dark); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; transition: color 0.2s; }
+.article-content a:hover { color: var(--accent); }
 .article-content h2 { margin-top: var(--space-12); font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.15; letter-spacing: -0.02em; }
 .article-content p { color: var(--text-body); margin-bottom: var(--space-4); max-width: 60ch; font-weight: 300; }
 .article-content blockquote {
