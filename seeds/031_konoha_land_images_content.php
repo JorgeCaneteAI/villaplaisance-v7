@@ -20,7 +20,7 @@ $articles = [
         'slug'        => 'naruto-provence-quand-le-manga-arrive-au-village',
         'cover_image' => 'konoha-land-vue.webp',
         'content'     => [
-            ['type' => 'paragraph', 'text' => 'Il y a quelque chose de légèrement surréaliste à voir le Monument Hokage se dresser entre les vignes du Vaucluse. Depuis le 4 avril 2026, le Parc Spirou à Monteux abrite Konoha Land — un hectare et demi de village ninja, première zone Naruto au monde en dehors du Japon. À 15 minutes de Bédarrides, entre Châteauneuf-du-Pape et Carpentras, le manga a trouvé un ancrage provençal que personne n\'avait vu venir.'],
+            ['type' => 'paragraph', 'text' => 'Il y a quelque chose de légèrement surréaliste à voir le Monument Hokage se dresser entre les vignes du Vaucluse. Depuis le 4 avril 2026, le Parc Spirou à Monteux abrite Konoha Land — un hectare et demi de village ninja, première zone Naruto au monde en dehors du Japon. À 15 minutes de <a href="/chambres-d-hotes">Bédarrides</a>, entre Châteauneuf-du-Pape et Carpentras, le manga a trouvé un ancrage provençal que personne n\'avait vu venir.'],
 
             ['type' => 'heading', 'text' => 'Pourquoi Naruto, et pourquoi ici'],
 
@@ -50,7 +50,9 @@ $articles = [
 
             ['type' => 'heading', 'text' => 'Une journée qui complète un séjour'],
 
-            ['type' => 'paragraph', 'text' => 'Le Parc Spirou est à 15 minutes de Bédarrides. On part le matin, on rentre en fin d\'après-midi. Entre les vignes de Châteauneuf-du-Pape et un village ninja, la journée a une texture qu\'on ne trouve nulle part ailleurs. C\'est le genre de contraste que la Provence permet — et que les enfants n\'oublient pas.'],
+            ['type' => 'paragraph', 'text' => 'Le Parc Spirou est à 15 minutes de Bédarrides. On part le matin, on rentre en fin d\'après-midi pour profiter du <a href="/espaces-exterieurs">jardin et de la piscine</a>. Entre les vignes de Châteauneuf-du-Pape et un village ninja, la journée a une texture qu\'on ne trouve nulle part ailleurs. C\'est le genre de contraste que la Provence permet — et que les enfants n\'oublient pas.'],
+
+            ['type' => 'paragraph', 'text' => 'Pour les détails pratiques — horaires, accès, attractions par âge — consultez notre <a href="/sur-place/parc-spirou-naruto-konoha-land">guide complet Konoha Land</a>.'],
 
             ['type' => 'quote', 'text' => 'Le meilleur voyage en famille n\'est pas celui où tout le monde fait la même chose. C\'est celui où tout le monde s\'amuse en même temps.'],
         ],
@@ -63,7 +65,7 @@ $articles = [
         'slug'        => 'parc-spirou-naruto-konoha-land',
         'cover_image' => 'kyubi-unchained.webp',
         'content'     => [
-            ['type' => 'paragraph', 'text' => 'Depuis le 4 avril 2026, le Parc Spirou Provence à Monteux abrite Konoha Land — la première zone thématique Naruto au monde en dehors du Japon. Un hectare et demi de village ninja, deux attractions inédites, dix statues grandeur nature et un parcours d\'examen Chûnin pour les plus jeunes. À quinze minutes de Bédarrides, c\'est la sortie famille la plus spectaculaire de la saison.'],
+            ['type' => 'paragraph', 'text' => 'Depuis le 4 avril 2026, le Parc Spirou Provence à Monteux abrite Konoha Land — la première zone thématique Naruto au monde en dehors du Japon. Un hectare et demi de village ninja, deux attractions inédites, dix statues grandeur nature et un parcours d\'examen Chûnin pour les plus jeunes. À quinze minutes de <a href="/chambres-d-hotes">Bédarrides</a>, c\'est la sortie famille la plus spectaculaire de la saison.'],
 
             ['type' => 'heading', 'text' => 'Ce qu\'est Konoha Land'],
 
@@ -71,7 +73,7 @@ $articles = [
 
             ['type' => 'image', 'src' => 'konoha-land-vue.webp', 'alt' => 'Vue d\'ensemble de Konoha Land au Parc Spirou Provence à Monteux', 'caption' => 'Konoha Land — 15 000 m² de village ninja au cœur du Vaucluse.'],
 
-            ['type' => 'paragraph', 'text' => 'Le résultat est immersif. Les fans reconnaîtront chaque recoin. Les néophytes découvriront un univers cohérent et soigné, bien au-delà du simple décor plaqué sur des manèges.'],
+            ['type' => 'paragraph', 'text' => 'Le résultat est immersif. Les fans reconnaîtront chaque recoin. Les néophytes découvriront un univers cohérent et soigné, bien au-delà du simple décor plaqué sur des manèges. Pour comprendre pourquoi Naruto en Provence a du sens, lisez <a href="/journal/naruto-provence-quand-le-manga-arrive-au-village">notre article dédié</a>.'],
 
             ['type' => 'heading', 'text' => 'Deux attractions, deux sensations'],
 
@@ -118,7 +120,7 @@ $articles = [
                 'Site officiel : parc-spirou.com',
             ]],
 
-            ['type' => 'paragraph', 'text' => 'Si vous séjournez à Villa Plaisance, la proximité permet de partir le matin et de rentrer pour profiter du jardin en fin d\'après-midi. C\'est aussi le genre de sortie qui fonctionne bien un jour de mistral — le parc est en partie abrité, et l\'adrénaline du coaster fait oublier le vent.'],
+            ['type' => 'paragraph', 'text' => 'Si vous séjournez à <a href="/chambres-d-hotes">Villa Plaisance</a>, la proximité permet de partir le matin et de rentrer pour profiter du <a href="/espaces-exterieurs">jardin et de la piscine</a> en fin d\'après-midi. C\'est aussi le genre de sortie qui fonctionne bien un jour de mistral — le parc est en partie abrité, et l\'adrénaline du coaster fait oublier le vent.'],
         ],
     ],
 
