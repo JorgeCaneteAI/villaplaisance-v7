@@ -29,7 +29,7 @@ try {
         'offer'          => 'bb',
         'author'         => $author,
         'origin'         => $origin,
-        'content'        => 'Jeg og to venninner, sammen med hunden min, hadde et helt fortreffelig opphold hos Jorge! Han er en fantastisk vertskap som virkelig bryr seg om gjestene sine. Frokosten var helt utrolig – fersk juice, hjemmelagde marmelader, croissanter og mye mer. Jorge ga oss også gode tips om restauranter og steder å besøke i området. Huset er vakkert, bassenget nydelig, og beliggenheten er perfekt for å utforske Provence. Oppholdet overgikk alle forventninger, faktisk bedre enn å bo på hotell!',
+        'content'        => 'Avec deux amies et mon chien, nous avons passé un séjour absolument merveilleux chez Jorge ! C\'est un hôte fantastique qui se soucie vraiment de ses invités. Le petit-déjeuner était incroyable — jus frais, confitures maison, croissants et bien plus encore. Jorge nous a aussi donné d\'excellents conseils sur les restaurants et les endroits à visiter dans la région. La maison est magnifique, la piscine superbe, et l\'emplacement parfait pour explorer la Provence. Le séjour a dépassé toutes nos attentes, c\'était même mieux que de séjourner à l\'hôtel !',
         'rating'         => 5.0,
         'review_date'    => '2026-04-01',
         'featured'       => 1,
