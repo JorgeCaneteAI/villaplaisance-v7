@@ -32,8 +32,8 @@ try {
         'content'        => 'Jeg og to venninner, sammen med hunden min, hadde et helt fortreffelig opphold hos Jorge! Han er en fantastisk vertskap som virkelig bryr seg om gjestene sine. Frokosten var helt utrolig – fersk juice, hjemmelagde marmelader, croissanter og mye mer. Jorge ga oss også gode tips om restauranter og steder å besøke i området. Huset er vakkert, bassenget nydelig, og beliggenheten er perfekt for å utforske Provence. Oppholdet overgikk alle forventninger, faktisk bedre enn å bo på hotell!',
         'rating'         => 5.0,
         'review_date'    => '2026-04-01',
-        'featured'       => 0,
-        'home_carousel'  => 0,
+        'featured'       => 1,
+        'home_carousel'  => 1,
         'status'         => 'published',
     ]);
     echo "✅  Avis d'Elisabeth (Norvège) ajouté.\n";
