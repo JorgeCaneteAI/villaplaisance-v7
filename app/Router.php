@@ -553,6 +553,16 @@ class Router
             (new \App\Controllers\Admin\ReservationController())->mois();
             return;
         }
+        if (preg_match('#^/admin/calendrier/saisie(?:/(\d+))?$#', $normalized, $m)) {
+            $id = isset($m[1]) ? (int) $m[1] : null;
+            $ctrl = new \App\Controllers\Admin\ReservationController();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $ctrl->saveSaisie($id);
+            } else {
+                $ctrl->showSaisie($id);
+            }
+            return;
+        }
         if (preg_match('#^/admin/calendrier/annee(?:/(\d{4}))?$#', $normalized, $m)) {
             $year = isset($m[1]) && $m[1] !== '' ? (int) $m[1] : null;
             (new \App\Controllers\Admin\ReservationController())->annee($year);

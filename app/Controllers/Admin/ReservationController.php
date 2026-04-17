@@ -96,4 +96,65 @@ class ReservationController extends AdminBaseController
             'couleurs'  => ReservationConstants::SOURCES,
         ]);
     }
+
+    public function showSaisie(?int $id = null): void
+    {
+        $resa = $id ? ReservationService::getById($id) : null;
+        if ($id && !$resa) {
+            self::abort404('Réservation introuvable');
+        }
+
+        $this->render('admin/reservations/saisie', [
+            'resa'       => $resa,
+            'id'         => $id,
+            'proprietes' => ReservationConstants::PROPRIETES,
+            'sources'    => ReservationConstants::SOURCES,
+            'statuts'    => ReservationConstants::STATUTS,
+        ]);
+    }
+
+    public function saveSaisie(?int $id = null): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect('/admin/calendrier/saisie' . ($id ? "/$id" : ''));
+            return;
+        }
+
+        $data = [
+            'nom_client'      => trim($_POST['nom_client'] ?? ''),
+            'propriete'       => $_POST['propriete'] ?? '',
+            'source'          => $_POST['source'] ?? '',
+            'arrivee'         => $_POST['arrivee'] ?? '',
+            'depart'          => $_POST['depart'] ?? '',
+            'adultes'         => (int) ($_POST['adultes'] ?? 0),
+            'enfants'         => (int) ($_POST['enfants'] ?? 0),
+            'bebes'           => (int) ($_POST['bebes'] ?? 0),
+            'animaux'         => (int) ($_POST['animaux'] ?? 0),
+            'animaux_details' => $_POST['animaux_details'] ?? '',
+            'provenance'      => $_POST['provenance'] ?? '',
+            'commentaire'     => $_POST['commentaire'] ?? '',
+            'prive'           => !empty($_POST['prive']),
+            'statut'          => $_POST['statut'] ?? 'Confirmée',
+            'numero_resa'     => $_POST['numero_resa'] ?? '',
+            'montant'         => $_POST['montant'] ?? '',
+        ];
+
+        if ($id) {
+            $ok = ReservationService::update($id, $data);
+            $this->flash($ok ? 'success' : 'error',
+                         $ok ? 'Réservation mise à jour.' : 'Réservation introuvable.');
+        } else {
+            ReservationService::create($data);
+            $this->flash('success', 'Réservation créée.');
+        }
+
+        // Rediriger vers le mois d'arrivée
+        if ($data['arrivee']) {
+            [$y, $m] = explode('-', $data['arrivee']);
+            $this->redirect('/admin/calendrier/' . (int) $y . '/' . (int) $m);
+        } else {
+            $this->redirect('/admin/calendrier');
+        }
+    }
 }
