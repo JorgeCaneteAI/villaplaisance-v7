@@ -59,7 +59,7 @@ class ReservationService
             $params[] = '%' . $filters['search'] . '%';
         }
 
-        $sql .= " ORDER BY arrivee";
+        $sql .= " ORDER BY arrivee, id";
         return \Database::fetchAll($sql, $params);
     }
 
@@ -68,74 +68,56 @@ class ReservationService
         return \Database::fetchOne("SELECT * FROM vp_reservations WHERE id = ?", [$id]);
     }
 
+    /**
+     * Normalise un payload de saisie vers un tableau prêt pour INSERT/UPDATE :
+     * régénère le code, calcule la durée, trim + uppercase le nom_client
+     * (via mb_strtoupper pour respecter les accents), applique les défauts.
+     * Exclut volontairement ical_uid (géré par le flux de sync iCal).
+     */
+    private static function buildPayload(array $data): array
+    {
+        return [
+            'code'            => self::generateCode(
+                (int) ($data['adultes'] ?? 0),
+                (int) ($data['enfants'] ?? 0),
+                (int) ($data['bebes'] ?? 0),
+                (int) ($data['animaux'] ?? 0),
+                $data['propriete'] ?? ''
+            ),
+            'nom_client'      => mb_strtoupper(trim($data['nom_client'] ?? ''), 'UTF-8'),
+            'propriete'       => $data['propriete'] ?? '',
+            'source'          => $data['source'] ?? '',
+            'arrivee'         => $data['arrivee'] ?? null,
+            'depart'          => $data['depart'] ?? null,
+            'duree'           => self::calculerDuree($data['arrivee'] ?? '', $data['depart'] ?? ''),
+            'adultes'         => (int) ($data['adultes'] ?? 0),
+            'enfants'         => (int) ($data['enfants'] ?? 0),
+            'bebes'           => (int) ($data['bebes'] ?? 0),
+            'animaux'         => (int) ($data['animaux'] ?? 0),
+            'animaux_details' => $data['animaux_details'] ?? '',
+            'provenance'      => $data['provenance'] ?? '',
+            'commentaire'     => $data['commentaire'] ?? '',
+            'prive'           => !empty($data['prive']) ? 1 : 0,
+            'statut'          => $data['statut'] ?? 'Confirmée',
+            'numero_resa'     => $data['numero_resa'] ?? '',
+            'montant'         => (isset($data['montant']) && $data['montant'] !== '') ? $data['montant'] : null,
+        ];
+    }
+
     public static function create(array $data): int
     {
-        $code = self::generateCode(
-            (int) ($data['adultes'] ?? 0),
-            (int) ($data['enfants'] ?? 0),
-            (int) ($data['bebes'] ?? 0),
-            (int) ($data['animaux'] ?? 0),
-            $data['propriete'] ?? ''
-        );
-        $duree = self::calculerDuree($data['arrivee'] ?? '', $data['depart'] ?? '');
-
-        return \Database::insert('vp_reservations', [
-            'code'            => $code,
-            'nom_client'      => strtoupper(trim($data['nom_client'] ?? '')),
-            'propriete'       => $data['propriete'] ?? '',
-            'source'          => $data['source'] ?? '',
-            'arrivee'         => $data['arrivee'] ?? null,
-            'depart'          => $data['depart'] ?? null,
-            'duree'           => $duree,
-            'adultes'         => (int) ($data['adultes'] ?? 0),
-            'enfants'         => (int) ($data['enfants'] ?? 0),
-            'bebes'           => (int) ($data['bebes'] ?? 0),
-            'animaux'         => (int) ($data['animaux'] ?? 0),
-            'animaux_details' => $data['animaux_details'] ?? '',
-            'provenance'      => $data['provenance'] ?? '',
-            'commentaire'     => $data['commentaire'] ?? '',
-            'prive'           => !empty($data['prive']) ? 1 : 0,
-            'statut'          => $data['statut'] ?? 'Confirmée',
-            'numero_resa'     => $data['numero_resa'] ?? '',
-            'montant'         => !empty($data['montant']) ? $data['montant'] : null,
-        ]);
+        return \Database::insert('vp_reservations', self::buildPayload($data));
     }
 
-    public static function update(int $id, array $data): void
+    public static function update(int $id, array $data): bool
     {
-        $code = self::generateCode(
-            (int) ($data['adultes'] ?? 0),
-            (int) ($data['enfants'] ?? 0),
-            (int) ($data['bebes'] ?? 0),
-            (int) ($data['animaux'] ?? 0),
-            $data['propriete'] ?? ''
-        );
-        $duree = self::calculerDuree($data['arrivee'] ?? '', $data['depart'] ?? '');
-
-        \Database::update('vp_reservations', [
-            'code'            => $code,
-            'nom_client'      => strtoupper(trim($data['nom_client'] ?? '')),
-            'propriete'       => $data['propriete'] ?? '',
-            'source'          => $data['source'] ?? '',
-            'arrivee'         => $data['arrivee'] ?? null,
-            'depart'          => $data['depart'] ?? null,
-            'duree'           => $duree,
-            'adultes'         => (int) ($data['adultes'] ?? 0),
-            'enfants'         => (int) ($data['enfants'] ?? 0),
-            'bebes'           => (int) ($data['bebes'] ?? 0),
-            'animaux'         => (int) ($data['animaux'] ?? 0),
-            'animaux_details' => $data['animaux_details'] ?? '',
-            'provenance'      => $data['provenance'] ?? '',
-            'commentaire'     => $data['commentaire'] ?? '',
-            'prive'           => !empty($data['prive']) ? 1 : 0,
-            'statut'          => $data['statut'] ?? 'Confirmée',
-            'numero_resa'     => $data['numero_resa'] ?? '',
-            'montant'         => !empty($data['montant']) ? $data['montant'] : null,
-        ], 'id = ?', [$id]);
+        $affected = \Database::update('vp_reservations', self::buildPayload($data), 'id = ?', [$id]);
+        return $affected > 0;
     }
 
-    public static function delete(int $id): void
+    public static function delete(int $id): bool
     {
-        \Database::delete('vp_reservations', 'id = ?', [$id]);
+        $affected = \Database::delete('vp_reservations', 'id = ?', [$id]);
+        return $affected > 0;
     }
 }
