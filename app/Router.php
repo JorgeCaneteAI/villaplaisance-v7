@@ -553,6 +553,11 @@ class Router
             (new \App\Controllers\Admin\ReservationController())->mois();
             return;
         }
+        if (preg_match('#^/admin/calendrier/annee(?:/(\d{4}))?$#', $normalized, $m)) {
+            $year = isset($m[1]) && $m[1] !== '' ? (int) $m[1] : null;
+            (new \App\Controllers\Admin\ReservationController())->annee($year);
+            return;
+        }
         if (preg_match('#^/admin/calendrier/(\d{4})/(\d{1,2})$#', $normalized, $m)) {
             (new \App\Controllers\Admin\ReservationController())->mois((int) $m[1], (int) $m[2]);
             return;

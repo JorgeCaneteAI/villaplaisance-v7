@@ -56,4 +56,38 @@ class ReservationController extends AdminBaseController
             'next_month'   => $nextMonth,
         ]);
     }
+
+    public function annee(?int $year = null): void
+    {
+        $today = new \DateTimeImmutable('today');
+        $year = $year ?? (int) $today->format('Y');
+
+        // Same bounds as validateYearMonth, but for year only
+        if ($year < 2000 || $year > 2100) {
+            http_response_code(404);
+            echo '<h1>404 — Année hors range</h1>';
+            echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
+            exit;
+        }
+
+        $moisData = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $d = ReservationService::buildCalendarData($year, $m);
+            $moisData[] = [
+                'month'       => $m,
+                'nom'         => ReservationConstants::MOIS_FR[$m],
+                'weeks'       => $d['weeks'],
+                'resa_by_day' => $d['resa_by_day'],
+            ];
+        }
+
+        $this->render('admin/reservations/annee', [
+            'year'      => $year,
+            'mois_data' => $moisData,
+            'today'     => $today,
+            'prev_year' => $year - 1,
+            'next_year' => $year + 1,
+            'couleurs'  => ReservationConstants::SOURCES,
+        ]);
+    }
 }
