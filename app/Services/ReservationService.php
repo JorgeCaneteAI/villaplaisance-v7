@@ -120,4 +120,95 @@ class ReservationService
         $affected = \Database::delete('vp_reservations', 'id = ?', [$id]);
         return $affected > 0;
     }
+
+    /**
+     * Retourne toutes les réservations qui chevauchent le mois donné
+     * (arrivée <= dernier jour du mois ET départ > premier jour du mois).
+     */
+    public static function getForMonth(int $year, int $month): array
+    {
+        $firstDay = sprintf('%04d-%02d-01', $year, $month);
+        $lastDay = date('Y-m-t', strtotime($firstDay));
+        return \Database::fetchAll(
+            "SELECT * FROM vp_reservations
+             WHERE arrivee <= ? AND depart > ?
+             ORDER BY arrivee, id",
+            [$lastDay, $firstDay]
+        );
+    }
+
+    /**
+     * Construit la grille du calendrier d'un mois :
+     * - weeks : tableau de semaines (lun→dim), chaque semaine étant 7 DateTimeImmutable
+     *   couvrant le mois (débord possible sur les mois précédent/suivant).
+     * - resa_by_day : tableau 'YYYY-MM-DD' → liste de résas affichables ce jour-là,
+     *   avec explosion arrivée-incluse / départ-exclu.
+     * - couleurs : mapping source → {bg, text}.
+     */
+    public static function buildCalendarData(int $year, int $month): array
+    {
+        $reservations = self::getForMonth($year, $month);
+
+        $firstDay = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
+        $lastDay = new \DateTimeImmutable($firstDay->format('Y-m-t'));
+
+        // Construire les semaines (lundi premier) couvrant tout le mois.
+        $weeks = [];
+        $cursor = $firstDay->modify('monday this week');
+        if ($cursor > $firstDay) {
+            $cursor = $cursor->modify('-1 week');
+        }
+        $endCursor = $lastDay->modify('sunday this week');
+        if ($endCursor < $lastDay) {
+            $endCursor = $endCursor->modify('+1 week');
+        }
+        while ($cursor <= $endCursor) {
+            $week = [];
+            for ($i = 0; $i < 7; $i++) {
+                $week[] = $cursor;
+                $cursor = $cursor->modify('+1 day');
+            }
+            $weeks[] = $week;
+        }
+
+        $couleurs = [
+            'Airbnb'   => ['bg' => '#FF5A5F', 'text' => '#ffffff'],
+            'Booking'  => ['bg' => '#003580', 'text' => '#ffffff'],
+            'Direct'   => ['bg' => '#639922', 'text' => '#ffffff'],
+            'Privée'   => ['bg' => '#888780', 'text' => '#ffffff'],
+            'Absence'  => ['bg' => '#2C2C2A', 'text' => '#ffffff'],
+        ];
+
+        // Exploser les résas en jours couverts (arrivée incluse, départ exclu).
+        $resaByDay = [];
+        foreach ($reservations as $r) {
+            $arr = new \DateTimeImmutable($r['arrivee']);
+            $dep = new \DateTimeImmutable($r['depart']);
+
+            $start = $arr > $firstDay ? $arr : $firstDay;
+            $depMinus1 = $dep->modify('-1 day');
+            $end = $depMinus1 < $lastDay ? $depMinus1 : $lastDay;
+
+            $d = $start;
+            while ($d <= $end) {
+                $key = $d->format('Y-m-d');
+                $resaByDay[$key][] = [
+                    'id'           => (int) $r['id'],
+                    'code'         => $r['code'],
+                    'nom_client'   => $r['nom_client'],
+                    'source'       => $r['source'],
+                    'provenance'   => $r['provenance'] ?? '',
+                    'commentaire'  => $r['commentaire'] ?? '',
+                    'couleur'      => $couleurs[$r['source']] ?? ['bg' => '#888780', 'text' => '#ffffff'],
+                    'arrivee'      => $r['arrivee'],
+                    'depart'       => $r['depart'],
+                    'is_start'     => $d == $arr || $d == $firstDay,
+                    'is_end'       => $d == $depMinus1 || $d == $lastDay,
+                ];
+                $d = $d->modify('+1 day');
+            }
+        }
+
+        return ['weeks' => $weeks, 'resa_by_day' => $resaByDay, 'couleurs' => $couleurs];
+    }
 }
