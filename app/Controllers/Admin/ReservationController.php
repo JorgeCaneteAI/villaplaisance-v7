@@ -209,4 +209,74 @@ class ReservationController extends AdminBaseController
             'statuts'      => ReservationConstants::STATUTS,
         ]);
     }
+
+    public function apiCode(): void
+    {
+        $code = ReservationService::generateCode(
+            (int) ($_GET['adultes'] ?? 0),
+            (int) ($_GET['enfants'] ?? 0),
+            (int) ($_GET['bebes'] ?? 0),
+            (int) ($_GET['animaux'] ?? 0),
+            $_GET['propriete'] ?? ''
+        );
+        $this->json(['code' => $code ?: '—']);
+    }
+
+    public function apiQuickUpdate(int $id): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->json(['ok' => false, 'error' => 'CSRF invalide'], 403);
+            return;
+        }
+
+        $resa = ReservationService::getById($id);
+        if (!$resa) {
+            $this->json(['ok' => false, 'error' => 'Introuvable'], 404);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $adultes = (int) ($input['adultes'] ?? $resa['adultes']);
+        $enfants = (int) ($input['enfants'] ?? $resa['enfants']);
+        $bebes   = (int) ($input['bebes']   ?? $resa['bebes']);
+        $animaux = (int) ($input['animaux'] ?? $resa['animaux']);
+
+        $nomClient = mb_strtoupper(trim($input['nom_client'] ?? $resa['nom_client']), 'UTF-8');
+
+        $ville = trim($input['ville'] ?? '');
+        $pays  = trim($input['pays']  ?? '');
+        if ($ville && $pays) {
+            $provenance = "$ville · $pays";
+        } elseif ($ville || $pays) {
+            $provenance = $ville ?: $pays;
+        } else {
+            $provenance = $resa['provenance'] ?? '';
+        }
+
+        $code = ReservationService::generateCode($adultes, $enfants, $bebes, $animaux, $resa['propriete']);
+
+        \Database::update('vp_reservations', [
+            'code'       => $code,
+            'nom_client' => $nomClient,
+            'adultes'    => $adultes,
+            'enfants'    => $enfants,
+            'bebes'      => $bebes,
+            'animaux'    => $animaux,
+            'provenance' => $provenance,
+        ], 'id = ?', [$id]);
+
+        $parts = explode(' · ', (string) $provenance, 2);
+        $this->json([
+            'ok'         => true,
+            'nom_client' => $nomClient,
+            'code'       => $code,
+            'adultes'    => $adultes,
+            'enfants'    => $enfants,
+            'bebes'      => $bebes,
+            'animaux'    => $animaux,
+            'ville'      => $parts[0] ?? '',
+            'pays'       => $parts[1] ?? '',
+        ]);
+    }
 }

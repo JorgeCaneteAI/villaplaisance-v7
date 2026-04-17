@@ -553,6 +553,15 @@ class Router
             (new \App\Controllers\Admin\ReservationController())->mois();
             return;
         }
+        if ($normalized === '/admin/calendrier/api/code') {
+            (new \App\Controllers\Admin\ReservationController())->apiCode();
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/api/quick-update/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->apiQuickUpdate((int) $m[1]);
+            return;
+        }
         if (preg_match('#^/admin/calendrier/saisie(?:/(\d+))?$#', $normalized, $m)) {
             $id = isset($m[1]) ? (int) $m[1] : null;
             $ctrl = new \App\Controllers\Admin\ReservationController();
