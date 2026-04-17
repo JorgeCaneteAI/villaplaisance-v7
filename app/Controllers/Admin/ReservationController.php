@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 
 use App\Services\ReservationService;
 use App\Services\ReservationConstants;
+use App\Services\CalendarPdfService;
 
 class ReservationController extends AdminBaseController
 {
@@ -313,5 +314,29 @@ class ReservationController extends AdminBaseController
             "SELECT * FROM vp_ical_sync_log ORDER BY id DESC LIMIT 50"
         );
         $this->render('admin/reservations/logs', ['logs' => $logs]);
+    }
+
+    public function exportPdfMois(int $year, int $month): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $path = CalendarPdfService::exportMonth($year, $month);
+        $this->downloadPdf($path, "reservations_{$year}_" . sprintf('%02d', $month) . '.pdf');
+    }
+
+    public function exportPdfAnnee(int $year): void
+    {
+        $year = self::validateYear($year);
+        $path = CalendarPdfService::exportYear($year);
+        $this->downloadPdf($path, "reservations_{$year}.pdf");
+    }
+
+    private function downloadPdf(string $path, string $filename): void
+    {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($path));
+        readfile($path);
+        register_shutdown_function(fn() => @unlink($path));
+        exit;
     }
 }

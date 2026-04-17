@@ -20,6 +20,7 @@ use App\Services\ReservationConstants;
     <div class="annee__toolbar">
         <a href="/admin/calendrier/<?= $year ?>/<?= (int) $today->format('n') ?>" class="btn">Vue mensuelle</a>
         <a href="/admin/calendrier/liste?mois=<?= $year ?>" class="btn">Liste <?= $year ?></a>
+        <a href="/admin/calendrier/export/pdf/annee/<?= $year ?>" class="btn">PDF année</a>
     </div>
 
     <div class="annee__grid">
