@@ -568,6 +568,10 @@ class Router
             (new \App\Controllers\Admin\ReservationController())->supprimer((int) $m[1]);
             return;
         }
+        if ($normalized === '/admin/calendrier/liste') {
+            (new \App\Controllers\Admin\ReservationController())->liste();
+            return;
+        }
         if (preg_match('#^/admin/calendrier/annee(?:/(\d{4}))?$#', $normalized, $m)) {
             $year = isset($m[1]) && $m[1] !== '' ? (int) $m[1] : null;
             (new \App\Controllers\Admin\ReservationController())->annee($year);

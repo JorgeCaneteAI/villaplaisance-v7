@@ -170,4 +170,25 @@ class ReservationController extends AdminBaseController
                      $ok ? 'Réservation supprimée.' : 'Réservation introuvable.');
         $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
     }
+
+    public function liste(): void
+    {
+        $filters = [
+            'propriete' => $_GET['propriete'] ?? '',
+            'source'    => $_GET['source'] ?? '',
+            'statut'    => $_GET['statut'] ?? '',
+            'mois'      => $_GET['mois'] ?? '',
+            'search'    => trim($_GET['search'] ?? ''),
+        ];
+
+        $reservations = ReservationService::getAll(array_filter($filters, fn($v) => $v !== ''));
+
+        $this->render('admin/reservations/liste', [
+            'reservations' => $reservations,
+            'filters'      => $filters,
+            'proprietes'   => ReservationConstants::PROPRIETES,
+            'sources'      => ReservationConstants::SOURCES,
+            'statuts'      => ReservationConstants::STATUTS,
+        ]);
+    }
 }
