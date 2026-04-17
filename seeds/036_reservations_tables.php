@@ -87,25 +87,33 @@ $feedDefs = [
     ['propriete' => 'VP-BB',  'source' => 'Booking', 'env' => 'ICAL_VP_BB_BOOKING'],
 ];
 
+$seeded = 0;
+$existed = 0;
+$skipped = 0;
+
 foreach ($feedDefs as $def) {
     $url = $_ENV[$def['env']] ?? '';
     if ($url === '') {
         fwrite(STDERR, "⚠ {$def['env']} non défini dans .env — flux {$def['propriete']}/{$def['source']} NON seedé\n");
+        $skipped++;
         continue;
     }
     $existing = \Database::fetchOne(
         "SELECT id FROM vp_ical_feeds WHERE propriete = ? AND source = ?",
         [$def['propriete'], $def['source']]
     );
-    if (!$existing) {
-        \Database::insert('vp_ical_feeds', [
-            'propriete' => $def['propriete'],
-            'source'    => $def['source'],
-            'url'       => $url,
-            'actif'     => 1,
-        ]);
+    if ($existing) {
+        $existed++;
+        continue;
     }
+    \Database::insert('vp_ical_feeds', [
+        'propriete' => $def['propriete'],
+        'source'    => $def['source'],
+        'url'       => $url,
+        'actif'     => 1,
+    ]);
+    $seeded++;
 }
 
 echo "✓ Tables créées : vp_reservations, vp_ical_feeds, vp_ical_sync_log, vp_trusted_devices\n";
-echo "✓ 4 flux iCal seedés dans vp_ical_feeds\n";
+echo "✓ Flux iCal : {$seeded} seedé(s), {$existed} déjà présent(s), {$skipped} ignoré(s) (env manquant)\n";
