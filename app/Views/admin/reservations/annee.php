@@ -4,7 +4,8 @@
  * @var int $year
  * @var array $mois_data
  * @var \DateTimeImmutable $today
- * @var int $prev_year @var int $next_year
+ * @var int $prev_year
+ * @var int $next_year
  * @var array $couleurs
  */
 use App\Services\ReservationConstants;
@@ -32,8 +33,8 @@ use App\Services\ReservationConstants;
                 <table class="mini-cal">
                     <thead>
                         <tr>
-                            <?php foreach (ReservationConstants::JOURS_FR as $jour): ?>
-                                <th><?= substr($jour, 0, 1) ?></th>
+                            <?php foreach (ReservationConstants::JOURS_FR_COURT as $jour): ?>
+                                <th><?= $jour ?></th>
                             <?php endforeach; ?>
                         </tr>
                     </thead>
@@ -46,7 +47,8 @@ use App\Services\ReservationConstants;
                                     $key = $day->format('Y-m-d');
                                     $firstResa = $isCurrent && !empty($m['resa_by_day'][$key]) ? $m['resa_by_day'][$key][0] : null;
                                     $bg = $firstResa ? $firstResa['couleur']['bg'] : '';
-                                    $style = $bg ? "background:" . htmlspecialchars($bg) . ";color:#fff;" : '';
+                                    $text = $firstResa ? ($firstResa['couleur']['text'] ?? '#fff') : '';
+                                    $style = $bg ? 'background:' . htmlspecialchars($bg) . ';color:' . htmlspecialchars($text) . ';' : '';
                                     ?>
                                     <td class="<?= $isCurrent ? 'current' : 'outside' ?>"
                                         style="<?= $style ?>">

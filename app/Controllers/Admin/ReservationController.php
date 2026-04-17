@@ -9,25 +9,39 @@ use App\Services\ReservationConstants;
 class ReservationController extends AdminBaseController
 {
     /**
-     * Normalise et valide un couple (year, month). Défauts sur aujourd'hui
-     * si null. 404 explicite si le couple est hors range réaliste — on ne
-     * veut pas silencieusement remapper /admin/calendrier/2026/13 vers
-     * avril, ça casserait la mental-model du back-button.
+     * Normalise et valide une année. Défaut sur aujourd'hui si null.
+     * 404 explicite si hors range réaliste — on ne veut pas silencieusement
+     * remapper une URL incohérente (ça casserait la mental-model du back-button).
+     */
+    private static function validateYear(?int $year): int
+    {
+        $year = $year ?? (int) (new \DateTimeImmutable('today'))->format('Y');
+        if ($year < 2000 || $year > 2100) {
+            self::abort404('Année hors range');
+        }
+        return $year;
+    }
+
+    /**
+     * Normalise et valide un couple (year, month). Déroule d'abord validateYear,
+     * puis vérifie le mois dans [1..12].
      */
     private static function validateYearMonth(?int $year, ?int $month): array
     {
-        $today = new \DateTimeImmutable('today');
-        $year = $year ?? (int) $today->format('Y');
-        $month = $month ?? (int) $today->format('n');
-
-        if ($year < 2000 || $year > 2100 || $month < 1 || $month > 12) {
-            http_response_code(404);
-            echo '<h1>404 — Période hors range</h1>';
-            echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
-            exit;
+        $year = self::validateYear($year);
+        $month = $month ?? (int) (new \DateTimeImmutable('today'))->format('n');
+        if ($month < 1 || $month > 12) {
+            self::abort404('Mois hors range');
         }
-
         return [$year, $month];
+    }
+
+    private static function abort404(string $reason): void
+    {
+        http_response_code(404);
+        echo '<h1>404 — ' . htmlspecialchars($reason) . '</h1>';
+        echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
+        exit;
     }
 
     public function mois(?int $year = null, ?int $month = null): void
@@ -59,16 +73,8 @@ class ReservationController extends AdminBaseController
 
     public function annee(?int $year = null): void
     {
+        $year = self::validateYear($year);
         $today = new \DateTimeImmutable('today');
-        $year = $year ?? (int) $today->format('Y');
-
-        // Same bounds as validateYearMonth, but for year only
-        if ($year < 2000 || $year > 2100) {
-            http_response_code(404);
-            echo '<h1>404 — Année hors range</h1>';
-            echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
-            exit;
-        }
 
         $moisData = [];
         for ($m = 1; $m <= 12; $m++) {
