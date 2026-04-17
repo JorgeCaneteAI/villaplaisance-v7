@@ -67,6 +67,7 @@
         <div class="topbar-right">
             <a href="/" class="topbar-link" target="_blank">Voir le site</a>
             <span class="topbar-user"><?= htmlspecialchars($_SESSION['admin_user_name'] ?? 'Admin') ?></span>
+            <a href="/admin/securite" class="topbar-link" title="Appareils de confiance">Sécurité</a>
             <a href="/admin/logout" class="topbar-link topbar-link-danger">Déconnexion</a>
         </div>
     </header>
