@@ -171,6 +171,24 @@ class ReservationController extends AdminBaseController
         $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
     }
 
+    public function printMois(int $year, int $month): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $data = ReservationService::buildCalendarData($year, $month);
+
+        // Vue sans layout admin — print.php s'auto-suffit (full page).
+        extract([
+            'year'        => $year,
+            'month'       => $month,
+            'mois_nom'    => ReservationConstants::MOIS_FR[$month],
+            'weeks'       => $data['weeks'],
+            'resa_by_day' => $data['resa_by_day'],
+            'couleurs'    => $data['couleurs'],
+            'today'       => new \DateTimeImmutable('today'),
+        ]);
+        require ROOT . '/app/Views/admin/reservations/print.php';
+    }
+
     public function liste(): void
     {
         $filters = [
