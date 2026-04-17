@@ -16,6 +16,7 @@
         <a href="/admin" class="topbar-logo">VP Admin</a>
         <nav class="topbar-nav">
             <a href="/admin/dashboard" class="topbar-link">Dashboard</a>
+            <a href="/admin/calendrier" class="topbar-link <?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/admin/calendrier') ? 'active' : '' ?>">Calendrier</a>
             <a href="/admin/analytics" class="topbar-link">Statistiques</a>
 
             <div class="topbar-group">
