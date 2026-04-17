@@ -563,6 +563,11 @@ class Router
             }
             return;
         }
+        if (preg_match('#^/admin/calendrier/supprimer/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->supprimer((int) $m[1]);
+            return;
+        }
         if (preg_match('#^/admin/calendrier/annee(?:/(\d{4}))?$#', $normalized, $m)) {
             $year = isset($m[1]) && $m[1] !== '' ? (int) $m[1] : null;
             (new \App\Controllers\Admin\ReservationController())->annee($year);

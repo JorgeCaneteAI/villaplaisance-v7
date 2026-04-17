@@ -157,4 +157,17 @@ class ReservationController extends AdminBaseController
             $this->redirect('/admin/calendrier');
         }
     }
+
+    public function supprimer(int $id): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+            return;
+        }
+        $ok = ReservationService::delete($id);
+        $this->flash($ok ? 'success' : 'error',
+                     $ok ? 'Réservation supprimée.' : 'Réservation introuvable.');
+        $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+    }
 }

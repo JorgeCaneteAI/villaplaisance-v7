@@ -109,8 +109,19 @@ $csrf = $_SESSION['csrf_token'] ?? ($_SESSION['csrf_token'] = bin2hex(random_byt
         <div class="actions">
             <button type="submit" class="btn btn-primary"><?= $id ? 'Enregistrer' : 'Créer' ?></button>
             <a href="/admin/calendrier" class="btn">Annuler</a>
+            <?php if ($id): ?>
+                <button type="submit" form="delete-form-<?= (int) $id ?>" class="btn btn-danger">Supprimer</button>
+            <?php endif; ?>
         </div>
     </form>
+
+    <?php if ($id): ?>
+        <form id="delete-form-<?= (int) $id ?>" method="post" action="/admin/calendrier/supprimer/<?= (int) $id ?>"
+              onsubmit="return confirm('Supprimer définitivement cette réservation ?');"
+              style="display:none">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+        </form>
+    <?php endif; ?>
 </div>
 
 <script>
@@ -150,6 +161,8 @@ refreshCode();
 .saisie fieldset.occupants label { font-size: 12px; }
 .saisie .code-preview { padding: 8px; background: #f5f5f5; border-radius: 4px; font-family: monospace; font-weight: 700; font-size: 16px; }
 .saisie .actions { display: flex; gap: 8px; margin-top: 8px; }
+.btn-danger { background: #d9534f; color: #fff; border: 1px solid #c9302c; }
+.btn-danger:hover { background: #c9302c; }
 @media (max-width: 640px) {
     .saisie .cols-2, .saisie .cols-3 { grid-template-columns: 1fr; }
     .saisie fieldset.occupants { grid-template-columns: repeat(2, 1fr); }
