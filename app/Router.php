@@ -29,6 +29,19 @@ class Router
             return;
         }
 
+        // PWA static files (manifest + service worker)
+        if ($this->uri === '/manifest.webmanifest') {
+            header('Content-Type: application/manifest+json');
+            readfile(ROOT . '/public/manifest.webmanifest');
+            return;
+        }
+        if ($this->uri === '/sw.js') {
+            header('Content-Type: application/javascript');
+            header('Service-Worker-Allowed: /');
+            readfile(ROOT . '/public/sw.js');
+            return;
+        }
+
         // Static files (sitemap, robots, llms.txt)
         if ($this->uri === '/sitemap.xml') {
             $this->serveSitemap();
@@ -161,6 +174,20 @@ class Router
             exit;
         }
 
+        $normalized = rtrim($uri, '/');
+        if ($normalized === '') $normalized = '/admin';
+
+        // Sécurité — appareils de confiance
+        if ($normalized === '/admin/securite') {
+            (new \App\Controllers\Admin\SecuriteController())->index();
+            return;
+        }
+        if (preg_match('#^/admin/securite/revoke/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\SecuriteController())->revoke((int) $m[1]);
+            return;
+        }
+
         // Admin routes
         $adminRoutes = [
             '/admin' => ['Controllers\\Admin\\DashboardController', 'index'],
@@ -182,9 +209,6 @@ class Router
             '/admin/itineraires' => ['Controllers\\Admin\\AdminItineraryController', 'index'],
             '/admin/itineraires/create' => ['Controllers\\Admin\\AdminItineraryController', 'create'],
         ];
-
-        $normalized = rtrim($uri, '/');
-        if ($normalized === '') $normalized = '/admin';
 
         if (isset($adminRoutes[$normalized])) {
             $method = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'store' : $adminRoutes[$normalized][1];
@@ -545,6 +569,69 @@ class Router
         }
         if (preg_match('#^/admin/seo-files/(\d+)/delete$#', $normalized, $m) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->callController('Controllers\\Admin\\SeoFileController', 'delete', ['id' => (int)$m[1]]);
+            return;
+        }
+
+        // Calendrier réservations
+        if ($normalized === '/admin/calendrier') {
+            (new \App\Controllers\Admin\ReservationController())->mois();
+            return;
+        }
+        if ($normalized === '/admin/calendrier/sync' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->sync();
+            return;
+        }
+        if ($normalized === '/admin/calendrier/logs') {
+            (new \App\Controllers\Admin\ReservationController())->logs();
+            return;
+        }
+        if ($normalized === '/admin/calendrier/api/code') {
+            (new \App\Controllers\Admin\ReservationController())->apiCode();
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/api/quick-update/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->apiQuickUpdate((int) $m[1]);
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/saisie(?:/(\d+))?$#', $normalized, $m)) {
+            $id = isset($m[1]) ? (int) $m[1] : null;
+            $ctrl = new \App\Controllers\Admin\ReservationController();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $ctrl->saveSaisie($id);
+            } else {
+                $ctrl->showSaisie($id);
+            }
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/supprimer/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->supprimer((int) $m[1]);
+            return;
+        }
+        if ($normalized === '/admin/calendrier/liste') {
+            (new \App\Controllers\Admin\ReservationController())->liste();
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/annee(?:/(\d{4}))?$#', $normalized, $m)) {
+            $year = isset($m[1]) && $m[1] !== '' ? (int) $m[1] : null;
+            (new \App\Controllers\Admin\ReservationController())->annee($year);
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/print/(\d{4})/(\d{1,2})$#', $normalized, $m)) {
+            (new \App\Controllers\Admin\ReservationController())->printMois((int) $m[1], (int) $m[2]);
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/export/pdf/(\d{4})/(\d{1,2})$#', $normalized, $m)) {
+            (new \App\Controllers\Admin\ReservationController())->exportPdfMois((int) $m[1], (int) $m[2]);
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/export/pdf/annee/(\d{4})$#', $normalized, $m)) {
+            (new \App\Controllers\Admin\ReservationController())->exportPdfAnnee((int) $m[1]);
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/(\d{4})/(\d{1,2})$#', $normalized, $m)) {
+            (new \App\Controllers\Admin\ReservationController())->mois((int) $m[1], (int) $m[2]);
             return;
         }
 

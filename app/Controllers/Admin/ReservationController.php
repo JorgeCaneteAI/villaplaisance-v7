@@ -1,0 +1,342 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Controllers\Admin;
+
+use App\Services\ReservationService;
+use App\Services\ReservationConstants;
+use App\Services\CalendarPdfService;
+
+class ReservationController extends AdminBaseController
+{
+    /**
+     * Normalise et valide une année. Défaut sur aujourd'hui si null.
+     * 404 explicite si hors range réaliste — on ne veut pas silencieusement
+     * remapper une URL incohérente (ça casserait la mental-model du back-button).
+     */
+    private static function validateYear(?int $year): int
+    {
+        $year = $year ?? (int) (new \DateTimeImmutable('today'))->format('Y');
+        if ($year < 2000 || $year > 2100) {
+            self::abort404('Année hors range');
+        }
+        return $year;
+    }
+
+    /**
+     * Normalise et valide un couple (year, month). Déroule d'abord validateYear,
+     * puis vérifie le mois dans [1..12].
+     */
+    private static function validateYearMonth(?int $year, ?int $month): array
+    {
+        $year = self::validateYear($year);
+        $month = $month ?? (int) (new \DateTimeImmutable('today'))->format('n');
+        if ($month < 1 || $month > 12) {
+            self::abort404('Mois hors range');
+        }
+        return [$year, $month];
+    }
+
+    private static function abort404(string $reason): void
+    {
+        http_response_code(404);
+        echo '<h1>404 — ' . htmlspecialchars($reason) . '</h1>';
+        echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
+        exit;
+    }
+
+    public function mois(?int $year = null, ?int $month = null): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $today = new \DateTimeImmutable('today');
+
+        $prevYear = $month === 1 ? $year - 1 : $year;
+        $prevMonth = $month === 1 ? 12 : $month - 1;
+        $nextYear = $month === 12 ? $year + 1 : $year;
+        $nextMonth = $month === 12 ? 1 : $month + 1;
+
+        $data = ReservationService::buildCalendarData($year, $month);
+
+        $lastSync = \Database::fetchOne(
+            "SELECT MAX(last_sync_at) AS last_sync_at, MIN(COALESCE(last_sync_ok, 1)) AS all_ok
+             FROM vp_ical_feeds WHERE actif = 1"
+        );
+
+        $this->render('admin/reservations/index', [
+            'year'         => $year,
+            'month'        => $month,
+            'mois_nom'     => ReservationConstants::MOIS_FR[$month],
+            'weeks'        => $data['weeks'],
+            'resa_by_day'  => $data['resa_by_day'],
+            'couleurs'     => $data['couleurs'],
+            'today'        => $today,
+            'prev_year'    => $prevYear,
+            'prev_month'   => $prevMonth,
+            'next_year'    => $nextYear,
+            'next_month'   => $nextMonth,
+            'last_sync_at' => $lastSync['last_sync_at'] ?? null,
+            'last_sync_ok' => $lastSync['all_ok'] ?? null,
+        ]);
+    }
+
+    public function annee(?int $year = null): void
+    {
+        $year = self::validateYear($year);
+        $today = new \DateTimeImmutable('today');
+
+        $moisData = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $d = ReservationService::buildCalendarData($year, $m);
+            $moisData[] = [
+                'month'       => $m,
+                'nom'         => ReservationConstants::MOIS_FR[$m],
+                'weeks'       => $d['weeks'],
+                'resa_by_day' => $d['resa_by_day'],
+            ];
+        }
+
+        $this->render('admin/reservations/annee', [
+            'year'      => $year,
+            'mois_data' => $moisData,
+            'today'     => $today,
+            'prev_year' => $year - 1,
+            'next_year' => $year + 1,
+            'couleurs'  => ReservationConstants::SOURCES,
+        ]);
+    }
+
+    public function showSaisie(?int $id = null): void
+    {
+        $resa = $id ? ReservationService::getById($id) : null;
+        if ($id && !$resa) {
+            self::abort404('Réservation introuvable');
+        }
+
+        $this->render('admin/reservations/saisie', [
+            'resa'       => $resa,
+            'id'         => $id,
+            'proprietes' => ReservationConstants::PROPRIETES,
+            'sources'    => ReservationConstants::SOURCES,
+            'statuts'    => ReservationConstants::STATUTS,
+        ]);
+    }
+
+    public function saveSaisie(?int $id = null): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect('/admin/calendrier/saisie' . ($id ? "/$id" : ''));
+            return;
+        }
+
+        $data = [
+            'nom_client'      => trim($_POST['nom_client'] ?? ''),
+            'propriete'       => $_POST['propriete'] ?? '',
+            'source'          => $_POST['source'] ?? '',
+            'arrivee'         => $_POST['arrivee'] ?? '',
+            'depart'          => $_POST['depart'] ?? '',
+            'adultes'         => (int) ($_POST['adultes'] ?? 0),
+            'enfants'         => (int) ($_POST['enfants'] ?? 0),
+            'bebes'           => (int) ($_POST['bebes'] ?? 0),
+            'animaux'         => (int) ($_POST['animaux'] ?? 0),
+            'animaux_details' => $_POST['animaux_details'] ?? '',
+            'provenance'      => $_POST['provenance'] ?? '',
+            'commentaire'     => $_POST['commentaire'] ?? '',
+            'prive'           => !empty($_POST['prive']),
+            'statut'          => $_POST['statut'] ?? 'Confirmée',
+            'numero_resa'     => $_POST['numero_resa'] ?? '',
+            'montant'         => $_POST['montant'] ?? '',
+        ];
+
+        if ($id) {
+            $ok = ReservationService::update($id, $data);
+            $this->flash($ok ? 'success' : 'error',
+                         $ok ? 'Réservation mise à jour.' : 'Réservation introuvable.');
+        } else {
+            ReservationService::create($data);
+            $this->flash('success', 'Réservation créée.');
+        }
+
+        // Rediriger vers le mois d'arrivée
+        if ($data['arrivee']) {
+            [$y, $m] = explode('-', $data['arrivee']);
+            $this->redirect('/admin/calendrier/' . (int) $y . '/' . (int) $m);
+        } else {
+            $this->redirect('/admin/calendrier');
+        }
+    }
+
+    public function supprimer(int $id): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+            return;
+        }
+        $ok = ReservationService::delete($id);
+        $this->flash($ok ? 'success' : 'error',
+                     $ok ? 'Réservation supprimée.' : 'Réservation introuvable.');
+        $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+    }
+
+    public function printMois(int $year, int $month): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $data = ReservationService::buildCalendarData($year, $month);
+
+        // Vue sans layout admin — print.php s'auto-suffit (full page).
+        extract([
+            'year'        => $year,
+            'month'       => $month,
+            'mois_nom'    => ReservationConstants::MOIS_FR[$month],
+            'weeks'       => $data['weeks'],
+            'resa_by_day' => $data['resa_by_day'],
+            'couleurs'    => $data['couleurs'],
+            'today'       => new \DateTimeImmutable('today'),
+        ]);
+        require ROOT . '/app/Views/admin/reservations/print.php';
+    }
+
+    public function liste(): void
+    {
+        $filters = [
+            'propriete' => $_GET['propriete'] ?? '',
+            'source'    => $_GET['source'] ?? '',
+            'statut'    => $_GET['statut'] ?? '',
+            'mois'      => $_GET['mois'] ?? '',
+            'search'    => trim($_GET['search'] ?? ''),
+        ];
+
+        $reservations = ReservationService::getAll(array_filter($filters, fn($v) => $v !== ''));
+
+        $this->render('admin/reservations/liste', [
+            'reservations' => $reservations,
+            'filters'      => $filters,
+            'proprietes'   => ReservationConstants::PROPRIETES,
+            'sources'      => ReservationConstants::SOURCES,
+            'statuts'      => ReservationConstants::STATUTS,
+        ]);
+    }
+
+    public function apiCode(): void
+    {
+        $code = ReservationService::generateCode(
+            (int) ($_GET['adultes'] ?? 0),
+            (int) ($_GET['enfants'] ?? 0),
+            (int) ($_GET['bebes'] ?? 0),
+            (int) ($_GET['animaux'] ?? 0),
+            $_GET['propriete'] ?? ''
+        );
+        $this->json(['code' => $code ?: '—']);
+    }
+
+    public function apiQuickUpdate(int $id): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->json(['ok' => false, 'error' => 'CSRF invalide'], 403);
+            return;
+        }
+
+        $resa = ReservationService::getById($id);
+        if (!$resa) {
+            $this->json(['ok' => false, 'error' => 'Introuvable'], 404);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $adultes = (int) ($input['adultes'] ?? $resa['adultes']);
+        $enfants = (int) ($input['enfants'] ?? $resa['enfants']);
+        $bebes   = (int) ($input['bebes']   ?? $resa['bebes']);
+        $animaux = (int) ($input['animaux'] ?? $resa['animaux']);
+
+        $nomClient = mb_strtoupper(trim($input['nom_client'] ?? $resa['nom_client']), 'UTF-8');
+
+        $ville = trim($input['ville'] ?? '');
+        $pays  = trim($input['pays']  ?? '');
+        if ($ville && $pays) {
+            $provenance = "$ville · $pays";
+        } elseif ($ville || $pays) {
+            $provenance = $ville ?: $pays;
+        } else {
+            $provenance = $resa['provenance'] ?? '';
+        }
+
+        $code = ReservationService::generateCode($adultes, $enfants, $bebes, $animaux, $resa['propriete']);
+
+        \Database::update('vp_reservations', [
+            'code'       => $code,
+            'nom_client' => $nomClient,
+            'adultes'    => $adultes,
+            'enfants'    => $enfants,
+            'bebes'      => $bebes,
+            'animaux'    => $animaux,
+            'provenance' => $provenance,
+        ], 'id = ?', [$id]);
+
+        $parts = explode(' · ', (string) $provenance, 2);
+        $this->json([
+            'ok'         => true,
+            'nom_client' => $nomClient,
+            'code'       => $code,
+            'adultes'    => $adultes,
+            'enfants'    => $enfants,
+            'bebes'      => $bebes,
+            'animaux'    => $animaux,
+            'ville'      => $parts[0] ?? '',
+            'pays'       => $parts[1] ?? '',
+        ]);
+    }
+
+    public function sync(): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+            return;
+        }
+
+        $result = \App\Services\IcalSyncService::syncAll('manual');
+        $msg = sprintf('Sync iCal — %d créée(s), %d mise(s) à jour, %d supprimée(s)',
+                       $result['created'], $result['updated'], $result['deleted']);
+        if (!empty($result['errors'])) {
+            $msg .= ' | Erreurs : ' . implode(' / ', $result['errors']);
+            $this->flash('error', $msg);
+        } else {
+            $this->flash('success', $msg);
+        }
+        $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+    }
+
+    public function logs(): void
+    {
+        $logs = \Database::fetchAll(
+            "SELECT * FROM vp_ical_sync_log ORDER BY id DESC LIMIT 50"
+        );
+        $this->render('admin/reservations/logs', ['logs' => $logs]);
+    }
+
+    public function exportPdfMois(int $year, int $month): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $path = CalendarPdfService::exportMonth($year, $month);
+        $this->downloadPdf($path, "reservations_{$year}_" . sprintf('%02d', $month) . '.pdf');
+    }
+
+    public function exportPdfAnnee(int $year): void
+    {
+        $year = self::validateYear($year);
+        $path = CalendarPdfService::exportYear($year);
+        $this->downloadPdf($path, "reservations_{$year}.pdf");
+    }
+
+    private function downloadPdf(string $path, string $filename): void
+    {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . filesize($path));
+        readfile($path);
+        register_shutdown_function(fn() => @unlink($path));
+        exit;
+    }
+}

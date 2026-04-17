@@ -32,6 +32,12 @@
     .pin-key:active { background: #e0e0e0; transform: scale(0.95); }
     .pin-key.backspace { font-size: 1.2rem; color: #888; }
     .pin-key.empty { visibility: hidden; border: none; }
+    .pin-trust-label {
+        display: flex; align-items: center; justify-content: center;
+        gap: 0.5rem; margin: 1rem auto 0; font-size: 0.8rem;
+        color: #666; cursor: pointer; user-select: none;
+    }
+    .pin-trust-label input { margin: 0; accent-color: var(--admin-accent); }
     .pin-error-shake { animation: shake 0.4s; }
     @keyframes shake {
         0%, 100% { transform: translateX(0); }
@@ -79,6 +85,11 @@
                 <button type="button" class="pin-key" data-val="0">0</button>
                 <button type="button" class="pin-key backspace" data-val="back">&#9003;</button>
             </div>
+
+            <label class="pin-trust-label">
+                <input type="checkbox" name="trust_device" value="1">
+                Faire confiance à cet appareil pendant 6 mois
+            </label>
         </form>
 
         <p style="text-align:center;margin-top:1rem"><a href="/admin/logout" style="color:#888;font-size:0.8rem">Annuler</a></p>

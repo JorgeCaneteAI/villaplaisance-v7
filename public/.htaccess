@@ -1,6 +1,12 @@
 RewriteEngine On
 RewriteBase /
 
+# ═══ PWA — MIME types + Service Worker scope ═══
+AddType application/manifest+json .webmanifest
+<Files "sw.js">
+    Header set Service-Worker-Allowed "/"
+</Files>
+
 # ═══ Force HTTPS (production) ═══
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
