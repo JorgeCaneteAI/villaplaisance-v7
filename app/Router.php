@@ -548,6 +548,16 @@ class Router
             return;
         }
 
+        // Calendrier réservations
+        if ($normalized === '/admin/calendrier') {
+            (new \App\Controllers\Admin\ReservationController())->mois();
+            return;
+        }
+        if (preg_match('#^/admin/calendrier/(\d{4})/(\d{1,2})$#', $normalized, $m)) {
+            (new \App\Controllers\Admin\ReservationController())->mois((int) $m[1], (int) $m[2]);
+            return;
+        }
+
         // 404 admin
         http_response_code(404);
         echo '<h1>404 — Page admin introuvable</h1>';
