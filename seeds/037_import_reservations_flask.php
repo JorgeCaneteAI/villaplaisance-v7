@@ -4,10 +4,17 @@ declare(strict_types=1);
 /**
  * Seed 037 — Import des réservations depuis la BDD SQLite de l'app Flask legacy.
  * Lecture via PDO sqlite → écriture dans vp_reservations MySQL.
- * Idempotent : saute les lignes déjà présentes (via couple source+ical_uid).
+ *
+ * Migration one-shot. Partiellement idempotent :
+ *   - Résas iCal (ical_uid non vide) : dédupliquées via UNIQUE KEY uniq_ical(source, ical_uid).
+ *   - Résas manuelles (ical_uid vide/NULL) : seraient dupliquées sur un re-run.
+ *     → Garde anti-re-run : avorte si vp_reservations contient déjà des lignes,
+ *       sauf si FORCE=1 dans l'environnement.
+ *
  * Usage :
  *   FLASK_DB_PATH=/path/vers/reservations.db php seeds/037_import_reservations_flask.php
  *   (variable d'env peut aussi être mise dans .env ; à retirer après exécution)
+ * Re-run forcé : FORCE=1 FLASK_DB_PATH=... php seeds/037_import_reservations_flask.php
  */
 
 require __DIR__ . '/../config.php';
@@ -18,10 +25,25 @@ if ($sqlitePath === '' || !file_exists($sqlitePath)) {
     exit(1);
 }
 
+// Garde anti-re-run (voir docblock).
+$existingCount = (int) \Database::fetchOne("SELECT COUNT(*) AS c FROM vp_reservations")['c'];
+if ($existingCount > 0 && empty($_ENV['FORCE'])) {
+    fwrite(STDERR, "ERR: vp_reservations contient déjà $existingCount ligne(s). "
+                 . "Relance avec FORCE=1 pour re-importer (risque de doublons sur les résas manuelles).\n");
+    exit(1);
+}
+
 $src = new PDO("sqlite:$sqlitePath");
 $src->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $rows = $src->query('SELECT * FROM reservations')->fetchAll(PDO::FETCH_ASSOC);
+
+// Sanity check : la BDD source doit contenir au moins 1 ligne.
+if (count($rows) === 0) {
+    fwrite(STDERR, "ERR: la source SQLite $sqlitePath ne contient aucune réservation — fichier vide ou corrompu ?\n");
+    exit(2);
+}
+
 $imported = 0;
 $skipped = 0;
 
