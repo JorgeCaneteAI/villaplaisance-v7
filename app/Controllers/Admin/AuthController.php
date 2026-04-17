@@ -51,6 +51,27 @@ class AuthController extends AdminBaseController
         $_SESSION['admin_user_name'] = $user['name'];
         $_SESSION['admin_user_email'] = $user['email'];
 
+        // Vérifier le cookie d'appareil de confiance — skip PIN si valide
+        $trustToken = $_COOKIE['vp_trust'] ?? '';
+        if ($trustToken) {
+            $tokenHash = hash('sha256', $trustToken);
+            $device = \Database::fetchOne(
+                "SELECT id FROM vp_trusted_devices
+                 WHERE user_id = ? AND token_hash = ? AND expires_at > NOW()",
+                [$user['id'], $tokenHash]
+            );
+            if ($device) {
+                \Database::update('vp_trusted_devices',
+                    ['last_used' => date('Y-m-d H:i:s')],
+                    'id = ?', [$device['id']]);
+                $_SESSION['admin_authenticated'] = true;
+                $this->redirect('/admin/dashboard');
+                return;
+            }
+            // Cookie présent mais invalide/expiré : on le supprime silencieusement
+            setcookie('vp_trust', '', ['expires' => time() - 3600, 'path' => '/']);
+        }
+
         // If user has a PIN, require it
         if (!empty($user['pin'])) {
             $_SESSION['admin_pin_pending'] = true;
@@ -127,6 +148,33 @@ class AuthController extends AdminBaseController
         unset($_SESSION['admin_pin_pending'], $_SESSION['admin_pin_attempts']);
         $_SESSION['admin_authenticated'] = true;
         session_regenerate_id(true);
+
+        // Si l'utilisateur a coché "Faire confiance à cet appareil"
+        if (!empty($_POST['trust_device'])) {
+            $token = bin2hex(random_bytes(32));
+            $tokenHash = hash('sha256', $token);
+            $expiresAt = date('Y-m-d H:i:s', strtotime('+180 days'));
+            $trustUserId = (int) ($_SESSION['admin_user_id'] ?? 0);
+
+            if ($trustUserId) {
+                \Database::insert('vp_trusted_devices', [
+                    'user_id'    => $trustUserId,
+                    'token_hash' => $tokenHash,
+                    'user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+                    'expires_at' => $expiresAt,
+                    'last_used'  => date('Y-m-d H:i:s'),
+                ]);
+
+                setcookie('vp_trust', $token, [
+                    'expires'  => time() + 180 * 86400,
+                    'path'     => '/',
+                    'secure'   => (APP_ENV === 'production'),
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            }
+        }
+
         $this->redirect('/admin/dashboard');
     }
 
