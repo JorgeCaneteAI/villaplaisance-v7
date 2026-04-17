@@ -29,6 +29,19 @@ class Router
             return;
         }
 
+        // PWA static files (manifest + service worker)
+        if ($this->uri === '/manifest.webmanifest') {
+            header('Content-Type: application/manifest+json');
+            readfile(ROOT . '/public/manifest.webmanifest');
+            return;
+        }
+        if ($this->uri === '/sw.js') {
+            header('Content-Type: application/javascript');
+            header('Service-Worker-Allowed: /');
+            readfile(ROOT . '/public/sw.js');
+            return;
+        }
+
         // Static files (sitemap, robots, llms.txt)
         if ($this->uri === '/sitemap.xml') {
             $this->serveSitemap();
