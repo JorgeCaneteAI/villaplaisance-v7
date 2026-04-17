@@ -8,16 +8,32 @@ use App\Services\ReservationConstants;
 
 class ReservationController extends AdminBaseController
 {
-    public function mois(?int $year = null, ?int $month = null): void
+    /**
+     * Normalise et valide un couple (year, month). Défauts sur aujourd'hui
+     * si null. 404 explicite si le couple est hors range réaliste — on ne
+     * veut pas silencieusement remapper /admin/calendrier/2026/13 vers
+     * avril, ça casserait la mental-model du back-button.
+     */
+    private static function validateYearMonth(?int $year, ?int $month): array
     {
         $today = new \DateTimeImmutable('today');
         $year = $year ?? (int) $today->format('Y');
         $month = $month ?? (int) $today->format('n');
 
-        // Normalise out-of-range month
-        if ($month < 1 || $month > 12) {
-            $month = (int) $today->format('n');
+        if ($year < 2000 || $year > 2100 || $month < 1 || $month > 12) {
+            http_response_code(404);
+            echo '<h1>404 — Période hors range</h1>';
+            echo '<p><a href="/admin/calendrier">Retour au calendrier</a></p>';
+            exit;
         }
+
+        return [$year, $month];
+    }
+
+    public function mois(?int $year = null, ?int $month = null): void
+    {
+        [$year, $month] = self::validateYearMonth($year, $month);
+        $today = new \DateTimeImmutable('today');
 
         $prevYear = $month === 1 ? $year - 1 : $year;
         $prevMonth = $month === 1 ? 12 : $month - 1;
