@@ -161,6 +161,20 @@ class Router
             exit;
         }
 
+        $normalized = rtrim($uri, '/');
+        if ($normalized === '') $normalized = '/admin';
+
+        // Sécurité — appareils de confiance
+        if ($normalized === '/admin/securite') {
+            (new \App\Controllers\Admin\SecuriteController())->index();
+            return;
+        }
+        if (preg_match('#^/admin/securite/revoke/(\d+)$#', $normalized, $m)
+            && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\SecuriteController())->revoke((int) $m[1]);
+            return;
+        }
+
         // Admin routes
         $adminRoutes = [
             '/admin' => ['Controllers\\Admin\\DashboardController', 'index'],
@@ -182,9 +196,6 @@ class Router
             '/admin/itineraires' => ['Controllers\\Admin\\AdminItineraryController', 'index'],
             '/admin/itineraires/create' => ['Controllers\\Admin\\AdminItineraryController', 'create'],
         ];
-
-        $normalized = rtrim($uri, '/');
-        if ($normalized === '') $normalized = '/admin';
 
         if (isset($adminRoutes[$normalized])) {
             $method = $_SERVER['REQUEST_METHOD'] === 'POST' ? 'store' : $adminRoutes[$normalized][1];
