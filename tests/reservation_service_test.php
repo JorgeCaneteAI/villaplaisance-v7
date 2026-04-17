@@ -37,6 +37,31 @@ if (ReservationService::calculerDuree('', '') !== 0) {
     $fails++;
 }
 
+// Test 6 : négatif clampé à 0
+if (ReservationService::generateCode(-3, 0, 0, 0, 'VP-BB') !== '0000-VP-BB') {
+    echo "FAIL: generateCode négatif\n"; $fails++;
+}
+
+// Test 7 : valeur >= 36 clampée à 35 (Z)
+if (ReservationService::generateCode(36, 0, 0, 0, 'VP-BB') !== 'Z000-VP-BB') {
+    echo "FAIL: generateCode clamp à 35=Z (reçu " . ReservationService::generateCode(36, 0, 0, 0, 'VP-BB') . ")\n"; $fails++;
+}
+
+// Test 8 : même jour = 0 nuit
+if (ReservationService::calculerDuree('2026-04-10', '2026-04-10') !== 0) {
+    echo "FAIL: calculerDuree même jour\n"; $fails++;
+}
+
+// Test 9 : date malformée = 0
+if (ReservationService::calculerDuree('not-a-date', '2026-04-10') !== 0) {
+    echo "FAIL: calculerDuree date malformée\n"; $fails++;
+}
+
+// Test 10 : une date vide = 0 (guard explicite, ne doit plus fallback sur now)
+if (ReservationService::calculerDuree('', '2026-04-10') !== 0) {
+    echo "FAIL: calculerDuree arrivée vide\n"; $fails++;
+}
+
 if ($fails === 0) {
     echo "OK: tous les tests passent\n";
     exit(0);
