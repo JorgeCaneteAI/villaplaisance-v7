@@ -27,6 +27,38 @@ use App\Services\ReservationConstants;
         <a href="/admin/calendrier/export/pdf/<?= $year ?>/<?= $month ?>" class="btn">PDF</a>
     </div>
 
+    <?php
+    $csrf = $_SESSION['csrf_token'] ?? ($_SESSION['csrf_token'] = bin2hex(random_bytes(32)));
+    $fmtAge = function(float $m): string {
+        if ($m < 60) return round($m) . ' min';
+        if ($m < 1440) return round($m / 60, 1) . ' h';
+        return round($m / 1440) . ' j';
+    };
+    $badgeClass = 'sync-unknown';
+    $badgeText = 'Sync jamais effectuée';
+    if (!empty($last_sync_at)) {
+        $syncAge = max(0, (time() - strtotime($last_sync_at)) / 60);
+        if ((int) $last_sync_ok === 0) {
+            $badgeClass = 'sync-error';
+            $badgeText = 'Dernière sync KO il y a ' . $fmtAge($syncAge);
+        } elseif ($syncAge < 60) {
+            $badgeClass = 'sync-ok'; $badgeText = 'Sync il y a ' . $fmtAge($syncAge);
+        } elseif ($syncAge < 1440) {
+            $badgeClass = 'sync-warn'; $badgeText = 'Sync il y a ' . $fmtAge($syncAge);
+        } else {
+            $badgeClass = 'sync-error'; $badgeText = 'Sync il y a ' . $fmtAge($syncAge);
+        }
+    }
+    ?>
+    <div class="sync-bar">
+        <span class="sync-badge <?= $badgeClass ?>"><?= htmlspecialchars($badgeText) ?></span>
+        <form method="post" action="/admin/calendrier/sync" style="display:inline">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+            <button type="submit" class="btn">Sync iCal</button>
+        </form>
+        <a href="/admin/calendrier/logs" class="btn">Logs</a>
+    </div>
+
     <table class="calendrier__grid">
         <thead>
             <tr>
@@ -80,4 +112,10 @@ use App\Services\ReservationConstants;
 .calendrier__grid td.outside .day-num { color: #bbb; }
 .calendrier__grid .resa { display: block; padding: 3px 5px; margin-top: 2px; border-radius: 3px; font-size: 10.5px; text-decoration: none; line-height: 1.2; }
 .calendrier__grid .resa:hover { opacity: 0.85; }
+.sync-bar { margin: 8px 0 20px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sync-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.sync-ok    { background: #E0F5E0; color: #2d7a2d; }
+.sync-warn  { background: #FFF3CD; color: #856404; }
+.sync-error { background: #F8D7DA; color: #721C24; }
+.sync-unknown { background: #E9ECEF; color: #495057; }
 </style>

@@ -56,6 +56,11 @@ class ReservationController extends AdminBaseController
 
         $data = ReservationService::buildCalendarData($year, $month);
 
+        $lastSync = \Database::fetchOne(
+            "SELECT MAX(last_sync_at) AS last_sync_at, MIN(COALESCE(last_sync_ok, 1)) AS all_ok
+             FROM vp_ical_feeds WHERE actif = 1"
+        );
+
         $this->render('admin/reservations/index', [
             'year'         => $year,
             'month'        => $month,
@@ -68,6 +73,8 @@ class ReservationController extends AdminBaseController
             'prev_month'   => $prevMonth,
             'next_year'    => $nextYear,
             'next_month'   => $nextMonth,
+            'last_sync_at' => $lastSync['last_sync_at'] ?? null,
+            'last_sync_ok' => $lastSync['all_ok'] ?? null,
         ]);
     }
 
@@ -278,5 +285,33 @@ class ReservationController extends AdminBaseController
             'ville'      => $parts[0] ?? '',
             'pays'       => $parts[1] ?? '',
         ]);
+    }
+
+    public function sync(): void
+    {
+        if (!$this->verifyCsrf()) {
+            $this->flash('error', 'Token CSRF invalide.');
+            $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+            return;
+        }
+
+        $result = \App\Services\IcalSyncService::syncAll('manual');
+        $msg = sprintf('Sync iCal — %d créée(s), %d mise(s) à jour, %d supprimée(s)',
+                       $result['created'], $result['updated'], $result['deleted']);
+        if (!empty($result['errors'])) {
+            $msg .= ' | Erreurs : ' . implode(' / ', $result['errors']);
+            $this->flash('error', $msg);
+        } else {
+            $this->flash('success', $msg);
+        }
+        $this->redirect($_SERVER['HTTP_REFERER'] ?? '/admin/calendrier');
+    }
+
+    public function logs(): void
+    {
+        $logs = \Database::fetchAll(
+            "SELECT * FROM vp_ical_sync_log ORDER BY id DESC LIMIT 50"
+        );
+        $this->render('admin/reservations/logs', ['logs' => $logs]);
     }
 }

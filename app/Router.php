@@ -553,6 +553,14 @@ class Router
             (new \App\Controllers\Admin\ReservationController())->mois();
             return;
         }
+        if ($normalized === '/admin/calendrier/sync' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            (new \App\Controllers\Admin\ReservationController())->sync();
+            return;
+        }
+        if ($normalized === '/admin/calendrier/logs') {
+            (new \App\Controllers\Admin\ReservationController())->logs();
+            return;
+        }
         if ($normalized === '/admin/calendrier/api/code') {
             (new \App\Controllers\Admin\ReservationController())->apiCode();
             return;
