@@ -3,3 +3,22 @@
 cookies.txt
 public/uploads/*
 !public/uploads/.htaccess
+
+# Claude Code metadata
+.claude/
+
+# Tableurs sources (jamais dans git)
+*.numbers
+*.xlsx
+
+# Archives locales (les anciennes versions ont leur propre .git)
+/_archive/
+
+# Dumps SQL (données réelles, sensible — jamais dans git)
+/seeds/*.sql
+
+# Logo source (vit dans 01_IDENTITE/ côté agence)
+/logo/
+
+# Zip d'uploads (uploads gérés via public/uploads/.htaccess)
+/public/uploads.zip
