@@ -90,11 +90,45 @@ class ContactController extends BaseController
                 'created_at' => date('Y-m-d H:i:s'),
                 'read_at' => null,
             ]);
+
+            $this->sendNotification($name, $email, $subject, $message, $lang);
+
             $this->flash('success', t('contact.form.success'));
         } catch (\Throwable) {
             $this->flash('error', t('contact.form.error'));
         }
 
         $this->redirect(\LangService::url('contact'));
+    }
+
+    private function sendNotification(string $name, string $email, string $subject, string $message, string $lang): void
+    {
+        $to = 'contact@villaplaisance.fr';
+        $cc = 'jorge@canete.fr';
+
+        $cleanSubject = $subject !== '' ? $subject : '(sans objet)';
+        $mailSubject = mb_encode_mimeheader('Villa Plaisance — Nouveau message : ' . $cleanSubject, 'UTF-8');
+
+        $body = "Nouveau message reçu via le formulaire de contact.\n\n"
+            . "Nom    : " . $name . "\n"
+            . "Email  : " . $email . "\n"
+            . "Sujet  : " . $cleanSubject . "\n"
+            . "Langue : " . $lang . "\n"
+            . "IP     : " . ($_SERVER['REMOTE_ADDR'] ?? '') . "\n"
+            . "Date   : " . date('Y-m-d H:i:s') . "\n\n"
+            . "------------------------------------------------------------\n"
+            . $message . "\n"
+            . "------------------------------------------------------------\n\n"
+            . "Répondre directement à ce mail enverra au visiteur (" . $email . ").\n"
+            . "Voir aussi dans l'admin : " . (\defined('APP_URL') ? APP_URL : '') . "/admin/messages";
+
+        $replyToName = preg_replace('/[\r\n]+/', ' ', $name);
+        $headers = "From: Villa Plaisance <contact@villaplaisance.fr>\r\n"
+            . "Reply-To: " . $replyToName . " <" . $email . ">\r\n"
+            . "Cc: " . $cc . "\r\n"
+            . "Content-Type: text/plain; charset=UTF-8\r\n"
+            . "X-Mailer: Villa Plaisance Site\r\n";
+
+        @mail($to, $mailSubject, $body, $headers);
     }
 }
